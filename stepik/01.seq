@@ -1,0 +1,87 @@
+from helpers import spaceSep, run, readseq, readseqs, readlines, parseInts
+
+
+###############
+##### 1.2 #####
+
+# 1.2.7 Find number of occurences of ptn in dna
+def getFrequeny(dna:seq, ptn:seq):
+   return len([1 for k in dna.split(len(ptn), 1) if k == ptn])
+
+if run(1):
+   print getFrequeny(s'GCGCG', s'GCG')
+   [dna, ptn] = readseqs('data/dataset_2_7.txt')
+   print getFrequeny(dna, ptn)
+
+
+# 1.2.10 Find most freq k-mers in dna
+def frequentKmers(dna:seq, k:int):
+   cnt = dict[seq, int]()
+   for kmr in dna.split(k, 1):
+   ## Can loop with Kmer, but k can't be passed at runtime..
+   # cnt = dict[Kmer[14], int]()
+   # for kmr in dna.kmers[Kmer[14]](1):
+      cnt[kmr] = cnt[kmr]+1 if kmr in cnt else 0 # just +1 if defaultdict is avail
+
+   maxCnt = max(cnt.values())
+   return [kmr for kmr in cnt.keys() if cnt[kmr] == maxCnt]
+
+if run(2):
+   frequentKmers(s'ACGTTGCATGTCGCATGATGCATGAGAGCT', 4) |> spaceSep |> echo
+   [txt, cnt] = readlines('data/dataset_2_10.txt')
+   frequentKmers(seq(txt), int(cnt)) |> spaceSep |> echo
+
+
+###############
+##### 1.3 #####
+
+# 1.3.2 Find reverse complement of dna
+if run(3):
+   print ~readseq('data/dataset_3_2.txt')
+
+
+# 1.3.5 Find indexes of ptn in dna
+def getPtnIndexes(dna:seq, ptn:seq):
+   return [i for i, kmr in enumerate(dna.split(len(ptn), 1)) if kmr == ptn]
+
+if run(4):
+   getPtnIndexes(s'GATATATGCATATACTT', s'ATAT') |> spaceSep |> echo
+   [ptn, dna] = readseqs('data/dataset_3_5.txt')
+   getPtnIndexes(dna, ptn) |> spaceSep |> echo
+
+
+# 1.3.6 Find indexes of ptn in Vibrio_cholerae.txt
+def getVibrioIndexes(ptn:seq):
+   return readseq('data/Vibrio_cholerae.txt') |> getPtnIndexes(..., ptn)
+
+if run(5):
+   getVibrioIndexes(s'CTTGATCAT') |> spaceSep |> echo
+
+
+###############
+##### 1.4 #####
+
+# 1.4.5 Find patterns forming clumps in a string - All distinct k-mers forming (L, t)-clumps in Genome.
+def getClumps(k:int, L:int, minTimes:int, dna:seq):
+   idxs = dict[seq, list[int]]()
+   
+   for i, kmr in enumerate(dna.split(k, 1)):
+      if kmr in idxs and len(idxs[kmr]) < minTimes:
+         for idx in idxs[kmr]:
+            if i - idx + k > L:
+               idxs[kmr].pop(0)
+         idxs[kmr].append(i)
+      elif kmr not in idxs:
+         idxs[kmr] = [i]
+   return [kmr for kmr in idxs.keys() if len(idxs[kmr]) >= minTimes]
+
+if run(6):
+   getClumps(5, 50, 4, s'CGGACTCGACAGATGTGAAGAACGACAATGTGAAGACTCGACACGACAGAGTGAAGAGAAGAGGAAACATTGTAA') |> spaceSep |> echo
+   [txt, nums] = readlines('data/dataset_4_5.txt')
+   [k, L, numTimes] = parseInts(nums)
+   getClumps(k, L, numTimes, seq(txt)) |> spaceSep |> echo
+
+
+# 1.4.6 Find length of clumps in E-coli
+if run(7):
+   getClumps(9, 500, 3, readseq('data/E_coli.txt')) |> len |> echo

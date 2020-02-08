@@ -1,0 +1,29 @@
+from sys import argv
+
+
+def spaceSep[T](ls:list[T]) -> str:
+   return ' '.join([str(k) for k in ls])
+
+def run(n:int) -> bool:
+   x = argv[1] if len(argv) > 1 else ''
+   res = x == '' or int(x) == n
+   if res:
+      print '\n'+str(n)+':'
+   return res
+
+def parseInts(s:str, sep=' ') -> list[int]:
+   return [int(x) for x in s.split(sep)]
+
+def readseq(s:str) -> seq:
+   f = open(s, 'r')
+   txt = f.readlines()[0]
+   return seq(txt)
+
+def readlines(s:str) -> list[str]:
+   f = open(s, 'r')
+   return f.readlines()
+
+def readseqs(s:str) -> list[seq]:
+   f = open(s, 'r')
+   lines = f.readlines()
+   return [seq(lines[0]), seq(lines[1])]
