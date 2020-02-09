@@ -14,16 +14,12 @@ def run(n:int) -> bool:
 def parseInts(s:str, sep=' ') -> list[int]:
    return [int(x) for x in s.split(sep)]
 
-def readseq(s:str) -> seq:
-   f = open(s, 'r')
-   txt = f.readlines()[0]
-   return seq(txt)
+def dPath(s:str):
+   return 'stepik/data/'+s
 
 def readlines(s:str) -> list[str]:
-   f = open(s, 'r')
+   f = open(dPath(s), 'r')
    return f.readlines()
 
 def readseqs(s:str) -> list[seq]:
-   f = open(s, 'r')
-   lines = f.readlines()
-   return [seq(lines[0]), seq(lines[1])]
+   return list(seqs(dPath(s)))
