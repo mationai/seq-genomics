@@ -1,0 +1,3 @@
+extend seq:
+   def __add__(self: seq, other: seq):
+      return seq(str(self) + str(other))

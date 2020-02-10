@@ -1,0 +1,153 @@
+from helpers import spaceSep, run, readlines, readseqs, parseInts, read
+from extensions import *
+
+ACGT = [s'A', s'C', s'G', s'T']
+type K1 = Kmer[1]
+
+
+# 1.3.4 Find skew (running sum of ACTG->+-1/0 mapping) of sequence
+def getSkew(dna:seq, skew0=0) -> list[int]:
+   def nextSkew(k:K1, n=0):
+      d = {
+         k'A': 0,
+         k'T': 0,
+         k'C': -1,
+         k'G': 1,
+      }
+      return d[k] + n
+   skew = [skew0]
+   for i, k in enumerate(dna.kmers[K1](1)):
+      skew.append(nextSkew(k, skew[i]))
+   return skew
+
+if run(1):
+   getSkew(s'CATGGGCATCGGCCATACGCC') |> spaceSep |> echo
+   getSkew(s'GAGCCACCGCGATA') |> spaceSep |> echo
+
+# 1.3.6 Find Indices of min skews of sequence
+def minSkewIndices(dna:seq):
+   low = min(getSkew(dna))
+   return [i for i, n in enumerate(getSkew(dna)) if n == low]
+
+if run(2):
+   dna = readseqs('dataset_7_6.txt')[0]
+   minSkewIndices(dna) |> spaceSep |> echo
+
+
+# 1.4.3 Find hamming distance
+def hamDist(s1:seq, s2:seq) -> int:
+   return len([1 for i in range(len(s1)) if s1[i] != s2[i]])
+
+if run(3):
+   abs(k'GGGCCGTTGGT' - k'GGACCGTTGAC') |> echo
+   [s1, s2] = readseqs('dataset_9_3.txt')
+   hamDist(s1, s2) |> echo
+
+# 1.4.4 Find Indices of ptn in seq with max of d Hamming dist diff 
+def ptnIndices(dna:seq, ptn:seq, d:int) -> list[int]:
+   return [i for i, k in enumerate(dna.split(len(ptn), 1)) if hamDist(ptn, k) <= d]
+
+if run(4):
+   dna = s'CGCCCGAATCCAGAACGCATTCCCATATTTCGGGACCACTGGCCTCCACGGTACGGACGTCAATCAAAT'
+   ptnIndices(dna, s'ATTCTGGA', 3) |> spaceSep |> echo
+   [ptn, s, n] = readlines('dataset_9_4.txt')
+   ptnIndices(seq(s), seq(ptn), int(n)) |> spaceSep |> echo
+
+# 1.4.5 
+if run(5):
+   ptnIndices(s'AACAAGCTGATAAACATTTAAAGAG', s'AAAAA', 2) |> len |> echo
+
+# 1.4.6 
+if run(6):
+   ptnIndices(s'TTTAGAGCCTTCAGAGG', s'GAGG', 2) |> len |> echo
+   [ptn, s, n] = readlines('dataset_9_6.txt')
+   ptnIndices(seq(s), seq(ptn), int(n)) |> len |> echo
+
+# 1.8.4 Find permutations of ptn differ by d or less
+def permutations(ptn:seq, d:int) -> list[seq]:
+   if d == 0:
+      return [ptn]       
+   elif len(ptn) == 1:
+      return ACGT
+   res = set[seq]()
+   suffixPerms = permutations(ptn[1:], d)
+
+   for p in suffixPerms:
+      # If ptn=s'ACGT', d=2:
+      # i: ptn  | suffixPerms
+      # 1: GT   | [A, C, G, T]
+      # 2: CGT  | [AA, CC, AC, GG, CG, AG, TT, TA, GT, TC, CT, TG, AT, GA, GC, CA]
+      # 3: ACGT | [ATT, TGT, CTT, TCT, GTT, TAT, TTT, AGA, CGA, AGC, CGC, AGG, GGA, ...]
+
+      if hamDist(ptn[1:], p) < d: # make sure mismatch requirement is less than d
+         for x in ACGT:
+            res.add(x + p)
+      else:
+         res.add(seq(str(ptn[0]) + str(p)))
+   return list(res)
+
+if run(10):
+   permutations(s'ACGT', 2) |> spaceSep |> echo
+   [ptn, n] = readlines('dataset_3014_4.txt')
+   permutations(seq(ptn), int(n)) |> spaceSep |> echo
+
+# Permutations of kmer differ by dist of 1 or less is much simpler
+def kmerPermsGen(kmer):
+   for i in range(len(kmer)):
+      for b in (k'A', k'C', k'G', k'T'):
+         if kmer[i] != b:
+            yield kmer |> base(i, b)
+if run(0):
+   list(kmerPermsGen(k'ACG')) |> spaceSep |> echo
+
+
+# 1.4.7 Find most frequent Kmers by d Hamming dist in seq. If revComp=True, account for reverse complement too
+def mostFreqKmers(dna:seq, k:int, d:int, revComp=False) -> list[seq]:
+   cnts = dict[seq, int]()
+   for i, p1 in enumerate(dna.split(k, 1)):
+      for p2 in permutations(p1, d):
+         cnts[p2] = cnts[p2]+1 if p2 in cnts else 1
+      if revComp:
+       for p2 in permutations(~p1, d):
+         cnts[p2] = cnts[p2]+1 if p2 in cnts else 1
+   most = max(cnts.values())
+   return [kmr for kmr in cnts.keys() if cnts[kmr] == most]
+
+if run(7):
+   mostFreqKmers(s'ACGTTGCATGTCGCATGATGCATGAGAGCT', 4, 1) |> spaceSep |> echo
+   [s, nsStr] = readlines('dataset_9_7.txt')
+   [k, d] = parseInts(nsStr)
+   mostFreqKmers(seq(s), k, d) |> spaceSep |> echo
+
+if run(8):
+   [s, nsStr] = readlines('dataset_9_8.txt')
+   [k, d] = parseInts(nsStr)
+   mostFreqKmers(seq(s), k, d, True) |> spaceSep |> echo
+
+
+# 1.6.2 Find Indices of min skews of sequence in file
+# FASTA('path/Salmonella_enterica.fa') will work in later releases.
+def minSkewInFile(f:File) -> list[int]:
+   skews = list[list[int]]()
+   lows = list[int]()
+   low = 0
+   lineLen = 0 
+
+   for i, line in f |> enumerate:
+      if i == 0:
+         continue
+      s = seq(line.replace('\r', ''))
+      if i == 1:
+         lineLen = len(s)
+      skew = getSkew(s, 0 if i==1 else skews[-1][-1])
+      low = min(low, (min(skew)))
+      skews.append(skew)
+   for i, skew in enumerate(skews):
+      for j, n in enumerate(skew):
+         if n == low:
+            lows.append(i * lineLen + j)
+   return lows
+
+if run(9):
+   minSkewInFile(read('Salmonella_enterica.txt')) |> spaceSep |> echo
+

@@ -44,7 +44,7 @@ if run(5):
 
 
 # 1.4.5 Find patterns forming clumps in a string - All distinct k-mers forming (L, t)-clumps in Genome.
-def getClumps(dna:seq, k:int, L:int, minTimes:int):
+def getClumps(dna:seq, k:int, L:int, minTimes:int) -> list[seq]:
    idxs = dict[seq, list[int]]()
    
    for i, kmr in enumerate(dna.split(k, 1)):
@@ -59,12 +59,12 @@ def getClumps(dna:seq, k:int, L:int, minTimes:int):
 
 if run(6):
    dna = s'CGGACTCGACAGATGTGAAGAACGACAATGTGAAGACTCGACACGACAGAGTGAAGAGAAGAGGAAACATTGTAA'
-   getClumps(dna, 5, 50, 4) |> spaceSep |> echo
+   dna |> getClumps(5, 50, 4) |> spaceSep |> echo
    [s, nums] = readlines('dataset_4_5.txt')
    [k, L, n] = parseInts(nums)
-   getClumps(seq(s), k, L, n) |> spaceSep |> echo
+   seq(s) |> getClumps(k, L, n) |> spaceSep |> echo
 
 
 # 1.4.6 Find length of clumps in E-coli
 if run(7):
-   getClumps(readseqs('E_coli.txt')[0], 9, 500, 3) |> len |> echo
+   readseqs('E_coli.txt')[0] |> getClumps(9, 500, 3) |> len |> echo

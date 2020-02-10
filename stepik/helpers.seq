@@ -17,6 +17,9 @@ def parseInts(s:str, sep=' ') -> list[int]:
 def dPath(s:str):
    return 'stepik/data/'+s
 
+def read(s:str) -> File:
+   return open(dPath(s), 'r')
+   
 def readlines(s:str) -> list[str]:
    f = open(dPath(s), 'r')
    return f.readlines()
