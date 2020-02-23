@@ -1,0 +1,134 @@
+from math import ceil, log2
+from seqlib import kmerEnums, product
+from helpers import Profile
+
+
+def histogram(motifs:list[seq], initCnt=1) -> dict[seq, list[int]]:
+   """ returns {
+     'A': [position-0 count, ...]
+     ...
+   }
+   """
+   motifLen = len(motifs[0])
+   res = {
+      s'A': [initCnt for j in range(motifLen)],
+      s'C': [initCnt for j in range(motifLen)],
+      s'G': [initCnt for j in range(motifLen)],
+      s'T': [initCnt for j in range(motifLen)],
+   }
+   for i in range(len(motifs)):
+      for j in range(motifLen):
+         c = motifs[i][j]
+         res[c][j] += 1
+   return res
+
+def motifsProfile(motifs:list[seq], initCnt=1) -> Profile:
+   """ returns {
+     'A': [position-0 count/len(motifs), ...]
+     ...
+   }
+   """
+   res = Profile()
+   counts = histogram(motifs, initCnt)
+
+   for c in counts.keys():
+      res[c] = [x/float(len(motifs)) for x in counts[c]]
+   return res
+
+def motifsScore(motifs:list[seq], initCnt=1) -> int:
+   """ returns
+   sum of score in each col, where score is count of occurences of non-most common nucleotide in col.
+   """
+   if len(motifs) == 0:
+      raise ValueError('Unexpected motifs length of 0')
+   motifLen = len(motifs[0])
+   maxcount = [0 for i in range(motifLen)]
+   counts = histogram(motifs, initCnt)
+
+   for i in range(motifLen):
+      for c in s'ACGT':
+         if maxcount[i] < counts[c][i]:
+            maxcount[i] = counts[c][i] 
+   return sum([len(motifs) - maxcount[i] for i in range(motifLen)])
+
+def motifsEntropy(motifs:list[seq]) -> float:
+   """
+   Entropy is a measure of the uncertainty of a probability distribution of motifs profile 
+   """
+   res = 0.0
+   profile = motifsProfile(motifs)
+   for i in range(len(motifs[0])):
+      entropy = 0.0
+      for c in s'ACGT':
+         prob = profile[c][i]
+         if prob > 0:
+            entropy += abs(prob * log2(prob))
+      res += entropy
+   return res
+
+def ptnProbability(ptn:seq, profile:Profile) -> float:
+   """
+   probability of ptn given profile
+   """
+   try:
+      return product([profile[c][i] for i, c in enumerate(ptn)])
+   except IndexError:
+      raise IndexError("profile[ACGT]'s length < ptn's length")
+
+def mostProbableKmer(ptn:seq, k:int, profile:Profile) -> seq:
+   """
+   Most probabile k-mer of given ptn & profile
+   """
+   maxPrb = -1.0
+   maxPtn = s''
+   for kmer in ptn.split(k, 1):
+      prob = ptnProbability(kmer, profile)
+      if prob > maxPrb:
+         maxPrb = prob
+         maxPtn = kmer
+   return maxPtn
+
+def greedyMotifSearch(seqs:list[seq], k:int, initCnt=1):
+   """
+   Similar to seqlib.medianKmer().
+   Returns a kmer for each seq where kmer has best match across seqs. Eg: 
+         ___
+   GGCGTTCAGGCA 1 
+         ___
+   AAGAATCAGTCA 1
+   ___
+   CAAGGAGTTCGC 0 
+        ___
+   CACGTCAATCAC 0
+   ___
+   CAATAATATTCG 0
+        Score = 2
+   http://www.mrgraeme.co.uk/greedy-motif-search/
+   https://stepik.org/lesson/29500/step/8?unit=10361 for eg (need week3 progress to access)
+   """
+   bestMotifs = [seqs[i][:k] for i in range(len(seqs))]
+
+   for kmer in seqs[0].split(k, 1):
+      motifs = [kmer]
+      for j in range(1, t):
+         profile = motifsProfile(motifs, initCnt)
+         bestMotif = mostProbableKmer(seqs[j], k, profile)
+         motifs.append(bestMotif)
+      if motifsScore(motifs) < motifsScore(bestMotifs, initCnt):
+         bestMotifs = motifs 
+   return bestMotifs
+
+def maxPossibleMotifScore(n:int, motifLen:int) -> int:
+   """
+   Maximum score occurs when the motif matrix is "least conserved", i.e. when the
+    maximum number of a single letter in a column is minimized.
+   This occurs when each letter occurs numMofits / 4 times in each column. 
+   If n is not a multiple of 4, then there will be one letter that occurs
+    more than n/4 times in a column.  This letter occurs ceiling(n/4) times.
+   Multiply this by motifLen columns for maximum possible score.
+   """
+   return int(motifLen * (n - ceil(n/4)))
+
+## aliases ##
+def motifEnum(seqs:list[seq], k:int, d:int) -> list[seq]:
+   return kmerEnums(seqs, k, d)

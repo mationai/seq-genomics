@@ -1,3 +1,8 @@
 extend seq:
-   def __add__(self: seq, other: seq):
-      return seq(str(self) + str(other))
+   def __add__(s1:seq, s2:seq):
+      return seq(str(s1) + str(s2))
+
+   def __sub__(s1:seq, s2:seq) -> int:
+      smLen = len(s1) if len(s1) < len(s2) else len(s2)
+      diff = len([1 for i in range(smLen) if s1[i] != s2[i]])
+      return diff + abs(len(s1) - len(s2)) 

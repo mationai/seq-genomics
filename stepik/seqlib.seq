@@ -1,0 +1,139 @@
+from extensions import *
+
+ACGT = [s'A', s'C', s'G', s'T']
+ACGTStr = 'ACGT'
+
+# NOTEs:
+# list(gen()) gives "bus error": compiler bug https://github.com/seq-lang/seq/issues/102
+
+def product[T](nums:list[T]) -> T:
+   res = nums[0]
+   for n in nums[1:]:
+      if n == 0:
+         return T(0)
+      res *= n
+   return res
+
+# Indexes of ptn in dna generator, with optional distance d
+def forIndexes(dna:seq, ptn:seq, d=0):
+   for i, s in enumerate(dna.split(len(ptn), 1)):
+      print s - ptn
+      if s - ptn <= d:
+         yield i
+
+def indexesIn(dna:seq, ptn:seq, d=0) -> list[int]:
+   # return list(forIndexes(dna, ptn, d)) # bus error 
+   return [i for i, s in enumerate(dna.split(len(ptn), 1)) if s - ptn <= d]
+
+# Boolean of ptn found in dna generator, with optional distance d
+def matched(dna:seq, ptn:seq, d=0) -> bool:
+   for s in dna.split(len(ptn), 1):
+      if s - ptn <= d:
+         return True
+   return False
+
+def matchedAll(seqs:list[seq], ptn:seq, d=0) -> bool:
+   return all([matched(s, ptn, d) for s in seqs])
+
+def permsDifferBy(ptn:seq, d:int) -> list[seq]:
+   """ 
+   Permutations of ptn differ by d or less
+   Eg. 'ACT', 1:
+     ACC ACT CCT TCT ACG AAT GCT ATT AGT ACA
+   Eg. 'ACGT', 1:
+     ATGT ACTT ACGG GCGT CCGT AAGT ACGT ACCT AGGT ACAT ACGA TCGT ACGC
+   len of 'ACGT', 3:  67
+   len of 'ACGT', 3: 175
+   len of 'ACGT', 4: 256
+   """ 
+   if d == 0:
+      return [ptn]       
+   elif len(ptn) == 1:
+      return ACGT
+   res = set[seq]()
+   suffixPerms = permsDifferBy(ptn[1:], d)
+
+   for p in suffixPerms:
+      # If ptn=s'ACGT', d=2:
+      # i: ptn  | suffixPerms
+      # 1: GT   | [A, C, G, T]
+      # 2: CGT  | [AA, CC, AC, GG, CG, AG, TT, TA, GT, TC, CT, TG, AT, GA, GC, CA]
+      # 3: ACGT | [ATT, TGT, CTT, TCT, GTT, TAT, TTT, AGA, CGA, AGC, CGC, AGG, GGA, ...]
+
+      if ptn[1:] - p < d: # make sure mismatch requirement is less than d
+         for x in ACGT:
+            res.add(x + p)
+      else:
+         res.add(seq(str(ptn[0]) + str(p)))
+   return list(res)
+
+
+# Permutations of kmer differ by dist of 1 or less (much simpler vs. permsDifferBy())
+def kmerPermsGen(kmer):
+   for i in range(len(kmer)):
+      for b in (k'A', k'C', k'G', k'T'):
+         if kmer[i] != b:
+            yield kmer |> base(i, b)
+
+# Permutations of ptnStr of length k
+def permsOfLen(k:int, ptnStr=ACGTStr) -> list[seq]:
+   res = list[seq]()
+   for r in range(len(ACGTStr) ** k):
+      s = ''
+      for j in range(k):
+         mod = len(ACGTStr) ** (k-j)
+         div = len(ACGTStr) ** (k-j-1)
+         i = (r % mod) // div
+         s += ACGTStr[i]
+      res.append(seq(s))
+   return res if k > 0 else list[seq]()
+
+def kmerEnums(seqs:list[seq], k:int, d:int) -> list[seq]:
+   """
+   All k-mers that appear in seqs with at most d mismatches. 
+   Eg. k=3, d=1, seqs=[ATTTGGC TGCCTTA CGGTATC GAAAATT]
+   gives [ATA ATT GTT TTT]
+   """
+   patterns = set[seq]()
+   for i, s in enumerate(seqs):
+      for kmer in s.split(k, 1):
+         for ptn in permsDifferBy(kmer, d):
+            if matchedAll(seqs[:i] + seqs[i+1:], ptn, d):
+               patterns.add(ptn)
+   return list(patterns)
+
+def distOfPtnInSeqs(seqs:list[seq], pattern:seq) -> int:
+   """ Eg. pattern of AAA:
+   d(AAA, TTACCT[TAA]C) = 1
+   d(AAA, [ACG]GCGTTCG) = 2
+   d(AAA, CCCT[AAA]GAG) = 0 = 1+2 = 3
+   """
+   k = len(pattern)
+   dist = 0
+   for s in seqs:
+      hamD = len(s)
+      for ptn in s.split(k, 1):
+         if hamD > pattern - ptn:
+            hamD = pattern - ptn
+      dist += hamD
+   return dist
+
+def medianKmer(seqs:list[seq], k:int) -> seq:
+   """
+   Find kmer that w/ least dist over all kmer patterns in seqs
+   Eg.    AAC dist 
+   ttaccttAAC 1
+   gATAtctgtc 1
+   ACGgcgttcg 2
+   ccctAAAgag 0
+   cgtcAGAggt 1
+   dist sum = 5
+   """
+   dist = len(seqs) * k
+   res = s''
+   for kmer in permsOfLen(k):
+      dist_ = distOfPtnInSeqs(seqs, kmer)
+      if dist > dist_:
+         dist = dist_
+         res = kmer
+   return res

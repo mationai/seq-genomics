@@ -1,8 +1,12 @@
 from sys import argv
-
+ 
+type Profile = dict[seq, list[float]]
 
 def spaceSep[T](ls:list[T]) -> str:
    return ' '.join([str(k) for k in ls])
+
+def nlSep[T](ls:list[T]) -> str:
+   return '\n'.join([str(k) for k in ls])
 
 def run(n:int) -> bool:
    x = argv[1] if len(argv) > 1 else ''
@@ -11,15 +15,29 @@ def run(n:int) -> bool:
       print '\n'+str(n)+':'
    return res
 
+# Much simpler logic if can map(type, list)
+
 def parseInts(s:str, sep=' ') -> list[int]:
-   return [int(x) for x in s.split(sep)]
+   return [int(x) for x in s.split(sep) if x.strip()]
+
+def parseFloats(s:str, sep=' ') -> list[float]:
+   return [float(x) for x in s.split(sep) if x.strip()]
+
+def parseSeqsStr(s:str, sep=' ') -> list[seq]:
+   return [seq(x) for x in s.split(sep) if x.strip()]
+
+def parseSeqs(s:list[str], sep=' ') -> list[seq]:
+   return [seq(x) for x in s if x.strip()]
+
+def parseProfile(d) -> Profile:
+   return {seq(key): parseFloats(d[i]) for i, key in enumerate('ACGT')}
 
 def dPath(s:str):
    return 'stepik/data/'+s
 
 def read(s:str) -> File:
    return open(dPath(s), 'r')
-   
+
 def readlines(s:str) -> list[str]:
    f = open(dPath(s), 'r')
    return f.readlines()

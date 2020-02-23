@@ -1,14 +1,12 @@
 from helpers import spaceSep, run, readlines, readseqs, parseInts
+from seqlib import indexesIn
 
 
 # 1.2.7 Find number of occurences of ptn in dna
-def find(dna:seq, ptn:seq):
-   return [i for i,k in enumerate(dna.split(len(ptn), 1)) if k == ptn]
-
 if run(1):
-   find(s'GCGCG', s'GCG') |> len |> echo
+   indexesIn(s'GCGCG', s'GCG') |> len |> echo
    [dna, ptn] = readseqs('dataset_2_7.txt')
-   find(dna, ptn) |> len |> echo
+   indexesIn(dna, ptn) |> len |> echo
 
 
 # 1.2.10 Find most freq k-mers in dna
@@ -33,14 +31,15 @@ if run(3):
 
 # 1.3.5 Find Indices of ptn in dna
 if run(4):
-   find(s'GATATATGCATATACTT', s'ATAT') |> spaceSep |> echo
+   indexesIn(s'GATATATGCATATACTT', s'ATAT') |> spaceSep |> echo
    [ptn, dna] = readseqs('dataset_3_5.txt')
-   find(dna, ptn) |> spaceSep |> echo
+   indexesIn(dna, ptn) |> spaceSep |> echo
 
 
 # 1.3.6 Find Indices of ptn in Vibrio_cholerae.txt
 if run(5):
-   readseqs('Vibrio_cholerae.txt')[0] |> find(s'CTTGATCAT') |> spaceSep |> echo
+   dna = readseqs('Vibrio_cholerae.txt')[0]
+   indexesIn(dna, s'CTTGATCAT') |> spaceSep |> echo
 
 
 # 1.4.5 Find patterns forming clumps in a string - All distinct k-mers forming (L, t)-clumps in Genome.
