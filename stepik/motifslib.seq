@@ -1,20 +1,21 @@
 from math import ceil, log2
-from seqlib import kmerEnums, product
+from seqlib import *
+import random
 from helpers import Profile
 
 
-def histogram(motifs:list[seq], initCnt=1) -> dict[seq, list[int]]:
-   """ returns {
+def histogram(motifs:Seqs, initCnt=1) -> dict[seq, list[int]]:
+   """ Returns {
      'A': [position-0 count, ...]
      ...
    }
    """
    motifLen = len(motifs[0])
    res = {
-      s'A': [initCnt for j in range(motifLen)],
-      s'C': [initCnt for j in range(motifLen)],
-      s'G': [initCnt for j in range(motifLen)],
-      s'T': [initCnt for j in range(motifLen)],
+      A: [initCnt for j in range(motifLen)],
+      C: [initCnt for j in range(motifLen)],
+      G: [initCnt for j in range(motifLen)],
+      T: [initCnt for j in range(motifLen)],
    }
    for i in range(len(motifs)):
       for j in range(motifLen):
@@ -22,9 +23,9 @@ def histogram(motifs:list[seq], initCnt=1) -> dict[seq, list[int]]:
          res[c][j] += 1
    return res
 
-def motifsProfile(motifs:list[seq], initCnt=1) -> Profile:
-   """ returns {
-     'A': [position-0 count/len(motifs), ...]
+def motifsProfile(motifs:Seqs, initCnt=1) -> Profile:
+   """ Returns {
+     'A': [position-0 count / motifs count, ...]
      ...
    }
    """
@@ -35,8 +36,8 @@ def motifsProfile(motifs:list[seq], initCnt=1) -> Profile:
       res[c] = [x/float(len(motifs)) for x in counts[c]]
    return res
 
-def motifsScore(motifs:list[seq], initCnt=1) -> int:
-   """ returns
+def motifsScore(motifs:Seqs, initCnt=1) -> int:
+   """ Returns
    sum of score in each col, where score is count of occurences of non-most common nucleotide in col.
    """
    if len(motifs) == 0:
@@ -51,9 +52,8 @@ def motifsScore(motifs:list[seq], initCnt=1) -> int:
             maxcount[i] = counts[c][i] 
    return sum([len(motifs) - maxcount[i] for i in range(motifLen)])
 
-def motifsEntropy(motifs:list[seq]) -> float:
-   """
-   Entropy is a measure of the uncertainty of a probability distribution of motifs profile 
+def motifsEntropy(motifs:Seqs) -> float:
+   """ Entropy is a measure of the uncertainty of a probability distribution of motifs profile
    """
    res = 0.0
    profile = motifsProfile(motifs)
@@ -67,8 +67,7 @@ def motifsEntropy(motifs:list[seq]) -> float:
    return res
 
 def ptnProbability(ptn:seq, profile:Profile) -> float:
-   """
-   probability of ptn given profile
+   """ Probability of ptn given profile
    """
    try:
       return product([profile[c][i] for i, c in enumerate(ptn)])
@@ -76,8 +75,7 @@ def ptnProbability(ptn:seq, profile:Profile) -> float:
       raise IndexError("profile[ACGT]'s length < ptn's length")
 
 def mostProbableKmer(ptn:seq, k:int, profile:Profile) -> seq:
-   """
-   Most probabile k-mer of given ptn & profile
+   """ Most probabile k-mer of given ptn & profile, aka Profile-most probable k-mer
    """
    maxPrb = -1.0
    maxPtn = s''
@@ -88,35 +86,80 @@ def mostProbableKmer(ptn:seq, k:int, profile:Profile) -> seq:
          maxPtn = kmer
    return maxPtn
 
-def greedyMotifSearch(seqs:list[seq], k:int, initCnt=1):
+def greedyMotifSearch(seqs:Seqs, k:int, initCnt=1):
    """
    Similar to seqlib.medianKmer().
    Returns a kmer for each seq where kmer has best match across seqs. Eg: 
-         ___
-   GGCGTTCAGGCA 1 
-         ___
-   AAGAATCAGTCA 1
-   ___
-   CAAGGAGTTCGC 0 
-        ___
-   CACGTCAATCAC 0
-   ___
-   CAATAATATTCG 0
+   ggcgttCAGgca 1 
+   aagaatCAGtca 1
+   CAAggagttcgc 0 
+   cacgtCAAtcac 0
+   CAAtaatattcg 0
         Score = 2
    http://www.mrgraeme.co.uk/greedy-motif-search/
-   https://stepik.org/lesson/29500/step/8?unit=10361 for eg (need week3 progress to access)
+   https://stepik.org/lesson/29500/step/8?unit=10361 - eg.(need week3 progress to access)
+   Note: The performance of function deteriorate if first string in Dna does not
+    contain k-mers similar to the consensus motif. Thus, biologists often run
+    it multiple times, shuffling the strings in Dna each time.
    """
-   bestMotifs = [seqs[i][:k] for i in range(len(seqs))]
+   seqsLen = len(seqs)
+   bestMotifs = [seqs[i][:k] for i in range(seqsLen)]
 
    for kmer in seqs[0].split(k, 1):
       motifs = [kmer]
-      for j in range(1, t):
+      for i in range(1, seqsLen):
          profile = motifsProfile(motifs, initCnt)
-         bestMotif = mostProbableKmer(seqs[j], k, profile)
-         motifs.append(bestMotif)
+         motifs.append( mostProbableKmer(seqs[i], k, profile) )
       if motifsScore(motifs) < motifsScore(bestMotifs, initCnt):
          bestMotifs = motifs 
    return bestMotifs
+
+def bestProfileMotifs(profile:Profile, seqs:Seqs) -> Seqs:
+   """ Find the best motif according to a profile and a list of dna strings
+   """
+   k = len(profile[A])
+   res = seqs[:]
+   for j in range(len(seqs)):
+      score = -1.0
+      # for kmer in seqs[j].split(k, 1): # didn't work for sample data, don't know why
+      for i in range(len(seqs[j])-k+1):
+         score_ = ptnProbability(seqs[j][i:i+k], profile) # probability of occurence
+         if score_ > score:
+            score = score_
+            res[j] = seqs[j][i:i+k]
+   return res
+
+def randMotifSearch(seqs:Seqs, k:int) -> Seqs: 
+   """ Returns motifs of k-len
+   """
+   seqLen = len(seqs[0])
+   motifs = Seqs()
+   for i in range(len(seqs)):
+      j = random.randint(0, seqLen-k)
+      motifs.append(seqs[i][j:j+k]) # k-len motifs 
+
+   res = motifs
+   while True:
+      profile = motifsProfile(motifs)
+      motifs = bestProfileMotifs(profile, seqs)
+      if motifsScore(motifs) < motifsScore(res):
+         res = motifs
+      else:
+         return res
+
+def bestMotifSearch(seqs:Seqs, k:int, n=1000) -> Seqs:
+   """ Returns motifs of k-len, by running randMotifSearch n times
+   """
+   score = len(seqs[0]) * len(seqs)
+   res = Seqs()
+   for i in range(n):
+      motifs = randMotifSearch(seqs, k)
+      score_ = motifsScore(motifs)
+      if score_ < score:
+         score = score_
+         res = motifs
+   return res
+
 
 def maxPossibleMotifScore(n:int, motifLen:int) -> int:
    """
@@ -130,5 +173,5 @@ def maxPossibleMotifScore(n:int, motifLen:int) -> int:
    return int(motifLen * (n - ceil(n/4)))
 
 ## aliases ##
-def motifEnum(seqs:list[seq], k:int, d:int) -> list[seq]:
+def motifEnum(seqs:Seqs, k:int, d:int) -> Seqs:
    return kmerEnums(seqs, k, d)

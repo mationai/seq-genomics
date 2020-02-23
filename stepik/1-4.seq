@@ -1,0 +1,16 @@
+from extensions import *
+from helpers import *
+from seqlib import *
+from motifslib import *
+
+
+## manually add NL at end to submit
+# 1.1.5
+if run(1):
+   seqs = parseSeqsStr('CGCCCCTCTCGGGGGTGTTCAGTAAACGGCCA GGGCGAGGTATGTGTAAGTGCCAAGGTGCCAG TAGTACCGAGACCGAAAGAAGTATACAGGCGT TAGATCAAGTTTCAGGTGCACGTCGGTGAACC AATCCACCAGCTCCACGTGCAATGTTGGCCTA')
+   print bestMotifSearch(seqs, 8)
+   l = readlines('dataset_161_5.txt')
+   [k, _] = parseInts(l[0])
+   bestMotifSearch(parseSeqs(l[1:]), k) |> nlSep |> echo
+
+# 1.2.3

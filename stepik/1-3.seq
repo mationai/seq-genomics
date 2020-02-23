@@ -51,6 +51,7 @@ if run(6):
       s'G': [0.0, 0.0, 1.0, 1.0, 0.9, 0.9, 0.1, 0.0, 0.0, 0.0, 0.0, 0.0],
       s'T': [0.7, 0.2, 0.0, 0.0, 0.1, 0.1, 0.0, 0.5, 0.8, 0.7, 0.3, 0.4],
    })
+   # 0 since it's product([...]), so if any is 0, product is 0
 
 # 1.5.3
 if run(7):
@@ -63,14 +64,14 @@ if run(7):
    l = readlines('dataset_159_3.txt')
    print mostProbableKmer(seq(l[0]), int(l[1]), parseProfile(l[2:]))
 
+## (Stepik needs extra NL at end)
 # 1.5.5
 if run(8):
    dna = parseSeqsStr('GGCGTTCAGGCA AAGAATCAGTCA CAAGGAGTTCGC CACGTCAATCAC CAATAATATTCG')
    print greedyMotifSearch(dna, 3, 0)
    l = readlines('dataset_159_5.txt')
    [k, _] = parseInts(l[0])
-   seqs = parseSeqs(l[1:])
-   greedyMotifSearch(seqs, k, 0) |> nlSep |> echo # bug in stepik, manually add NL to submit
+   greedyMotifSearch(parseSeqs(l[1:]), k, 0) |> nlSep |> echo 
 
 # 1.6.9
 if run(9):
@@ -78,5 +79,4 @@ if run(9):
    print greedyMotifSearch(dna, 3)
    l = readlines('dataset_160_9.txt')
    [k, _] = parseInts(l[0])
-   seqs = parseSeqs(l[1:])
-   greedyMotifSearch(seqs, k) |> nlSep |> echo # bug in stepik, manually add NL to submit
+   greedyMotifSearch(parseSeqs(l[1:]), k) |> nlSep |> echo
