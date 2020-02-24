@@ -3,14 +3,38 @@ from helpers import *
 from seqlib import *
 from motifslib import *
 
-
 ## manually add NL at end to submit
 # 1.1.5
 if run(1):
-   seqs = parseSeqsStr('CGCCCCTCTCGGGGGTGTTCAGTAAACGGCCA GGGCGAGGTATGTGTAAGTGCCAAGGTGCCAG TAGTACCGAGACCGAAAGAAGTATACAGGCGT TAGATCAAGTTTCAGGTGCACGTCGGTGAACC AATCCACCAGCTCCACGTGCAATGTTGGCCTA')
-   print bestMotifSearch(seqs, 8)
+   # sample and dataset 2 seems many alternatives give same score, so use dataset 1 to test
+   seqs = parseSeqsStr('AATTGGCACATCATTATCGATAACGATTCGCCGCATTGCC GGTTAACATCGAATAACTGACACCTGCTCTGGCACCGCTC AATTGGCGGCGGTATAGCCAGATAGTGCCAATAATTTCCT GGTTAATGGTGAAGTGTGGGTTATGGGGAAAGGCAGACTG AATTGGACGGCAACTACGGTTACAACGCAGCAAGAATATT GGTTAACTGTTGTTGCTAACACCGTTAAGCGACGGCAACT AATTGGCCAACGTAGGCGCGGCTTGGCATCTCGGTGTGTG GGTTAAAAGGCGCATCTTACTCTTTTCGCTTTCAAAAAAA')
+   testSeqs(iterRandMotifSearch(seqs, 6), parseSeqsStr('CGATAA GGTTAA GGTATA GGTTAA GGTTAC GGTTAA GGCCAA GGTTAA'))
+
    l = readlines('dataset_161_5.txt')
    [k, _] = parseInts(l[0])
-   bestMotifSearch(parseSeqs(l[1:]), k) |> nlSep |> echo
+   res = iterRandMotifSearch(parseSeqs(l[1:]), k)
+   testSeqs(res, parseSeqsStr('TCTAAATCTGGGGTT ACTGCGTTCGAGCTT ACTATATCATAGCTT ACTACCCTCGAGCTT ACTGCTTTCGAGCTT ACTATATTCGAGAAC CCTATATTCGAGCGC ACTATTGACGAGCTT AACGTATTCGAGCTT CATATATTCGAGCTG ACTATATTCCGCCTT ACTATATTCGACAGT ACTATACATGAGCTT ACTATATTAAGGCTT ACTATCCCCGAGCTT ACTATAGAAGAGCTT ACTACCATCGAGCTT CGAATATTCGAGCTT ACTATATTCGTAGTT ACGTGATTCGAGCTT'))
+   res |> nlSep |> echo
 
-# 1.2.3
+if run(2):
+   k = 15
+   n = 10 # num seqs 
+   l = 600 # seq len
+
+   # 1.2.3 - probability of capturing a 15-mer in n l-length nucleotides
+   p1 = (l - k) / (l+1 - k) # probability of not capturing the kmer in one string
+   pr = p1 ** n # p1 * p2 ... * p10, where all probabilities are same
+   print 1.0 - pr
+
+   # 1.2.4 - probability of capturing 2 15-mer in n l-length nucleotides
+   print 1.0 - p1**n - (1.0/(l+1-k) * p1**(n-1) * n)
+
+# 1.3.4
+if run(3):
+   seqs = parseSeqsStr('CGCCCCTCTCGGGGGTGTTCAGTAACCGGCCA GGGCGAGGTATGTGTAAGTGCCAAGGTGCCAG TAGTACCGAGACCGAAAGAAGTATACAGGCGT TAGATCAAGTTTCAGGTGCACGTCGGTGAACC AATCCACCAGCTCCACGTGCAATGTTGGCCTA')
+   testSeqs(gibbsSampler(seqs, 8), parseSeqsStr('TCTCGGGG CCAAGGTG TACAGGCG TTCAGGTG TCCACGTG'))
+
+   l = readlines('dataset_163_4.txt')
+   [k, _, iters] = parseInts(l[0])
+   res = gibbsSampler(parseSeqs(l[1:]), k)
+   res |> nlSep |> echo

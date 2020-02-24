@@ -13,9 +13,9 @@ if run(0):
 # 1.7.1
 if run(1):
    seqs = parseSeqsStr('TTACCTTAAC GATATCTGTC ACGGCGTTCG CCCTAAAGAG CGTCAGAGGT')
-   print distOfPtnInSeqs(seqs, s'AAA')
+   print distIn(seqs, s'AAA')
    [ptn, s] = readlines('dataset_5164_1.txt')
-   print distOfPtnInSeqs(parseSeqsStr(s), seq(ptn))
+   print distIn(parseSeqsStr(s), seq(ptn))
 
 # 1.2.8 
 if run(2):

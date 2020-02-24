@@ -1,7 +1,7 @@
 from math import ceil, log2
 from seqlib import *
 import random
-from helpers import Profile
+from helpers import Profile, SeqProbDict
 
 
 def histogram(motifs:Seqs, initCnt=1) -> dict[seq, list[int]]:
@@ -29,12 +29,8 @@ def motifsProfile(motifs:Seqs, initCnt=1) -> Profile:
      ...
    }
    """
-   res = Profile()
    counts = histogram(motifs, initCnt)
-
-   for c in counts.keys():
-      res[c] = [x/float(len(motifs)) for x in counts[c]]
-   return res
+   return {c: [x/float(len(motifs)) for x in counts[c]] for c in counts}
 
 def motifsScore(motifs:Seqs, initCnt=1) -> int:
    """ Returns
@@ -72,19 +68,36 @@ def ptnProbability(ptn:seq, profile:Profile) -> float:
    try:
       return product([profile[c][i] for i, c in enumerate(ptn)])
    except IndexError:
-      raise IndexError("profile[ACGT]'s length < ptn's length")
+      raise IndexError("profile[A|C|G|T]'s value length < ptn's length")
+
+def kmerProbabilities(dna:seq, profile:Profile, k:int) -> list[float]:
+   """ All probabilities of kmers in dna
+   """
+   return [ptnProbability(kmer, profile) for kmer in dna.split(k, 1)]
 
 def mostProbableKmer(ptn:seq, k:int, profile:Profile) -> seq:
    """ Most probabile k-mer of given ptn & profile, aka Profile-most probable k-mer
    """
    maxPrb = -1.0
-   maxPtn = s''
+   res = s''
    for kmer in ptn.split(k, 1):
       prob = ptnProbability(kmer, profile)
       if prob > maxPrb:
          maxPrb = prob
-         maxPtn = kmer
-   return maxPtn
+         res = kmer
+   return res
+
+def mostProbableSeq(seqs:Seqs, profile:Profile) -> seq:
+   """ Most probabile k-mer of given ptn & profile, aka Profile-most probable k-mer
+   """
+   maxPrb = -1.0
+   res = s''
+   for dna in seqs:
+      prob = ptnProbability(dna, profile)
+      if prob > maxPrb:
+         maxPrb = prob
+         res = dna 
+   return res
 
 def greedyMotifSearch(seqs:Seqs, k:int, initCnt=1):
    """
@@ -121,24 +134,23 @@ def bestProfileMotifs(profile:Profile, seqs:Seqs) -> Seqs:
    res = seqs[:]
    for j in range(len(seqs)):
       score = -1.0
-      # for kmer in seqs[j].split(k, 1): # didn't work for sample data, don't know why
-      for i in range(len(seqs[j])-k+1):
-         score_ = ptnProbability(seqs[j][i:i+k], profile) # probability of occurence
+      for kmer in seqs[j].split(k, 1):
+         score_ = ptnProbability(kmer, profile) # probability of occurence
          if score_ > score:
             score = score_
-            res[j] = seqs[j][i:i+k]
+            res[j] = kmer
    return res
+
+def iRandj(seqs:Seqs, k:int):
+   seqLen = len(seqs[0])
+   for i in range(len(seqs)):
+      yield i, random.randint(0, seqLen-k)
 
 def randMotifSearch(seqs:Seqs, k:int) -> Seqs: 
    """ Returns motifs of k-len
    """
    seqLen = len(seqs[0])
-   motifs = Seqs()
-   for i in range(len(seqs)):
-      j = random.randint(0, seqLen-k)
-      motifs.append(seqs[i][j:j+k]) # k-len motifs 
-
-   res = motifs
+   res = motifs = [seqs[i][j:j+k] for i, j in iRandj(seqs, k)]
    while True:
       profile = motifsProfile(motifs)
       motifs = bestProfileMotifs(profile, seqs)
@@ -147,12 +159,12 @@ def randMotifSearch(seqs:Seqs, k:int) -> Seqs:
       else:
          return res
 
-def bestMotifSearch(seqs:Seqs, k:int, n=1000) -> Seqs:
+def iterRandMotifSearch(seqs:Seqs, k:int, iters=1000) -> Seqs:
    """ Returns motifs of k-len, by running randMotifSearch n times
    """
    score = len(seqs[0]) * len(seqs)
    res = Seqs()
-   for i in range(n):
+   for _ in range(iters):
       motifs = randMotifSearch(seqs, k)
       score_ = motifsScore(motifs)
       if score_ < score:
@@ -160,6 +172,63 @@ def bestMotifSearch(seqs:Seqs, k:int, n=1000) -> Seqs:
          res = motifs
    return res
 
+def randomKey(seqProb:SeqProbDict) -> seq:
+   """
+   Randomly select a key from seqProb Eg.: {'ACGTG': .5, ...}, weighted by its probs.
+   """
+   aggr = sum(seqProb.values())
+   profile = {dna: seqProb[dna]/aggr for dna in seqProb}
+   y = 0.0
+   profileSums = dict[seq, float]()
+
+   for dna in profile: #need to add them together so when a number is randomly selected, there will be defined ranges
+      y += profile[dna]
+      profileSums[dna] = y
+   randf = random.uniform(0, 1)
+   for dna in profileSums:
+      if randf <= profileSums[dna]:
+         return dna
+
+def genKmer(dna:seq, profile:Profile, k:int) -> seq:
+   """
+   Generate a k-mer weighted on the probability profile of it occuring in the dna string
+   """
+   seqProb = {dna[i:i+k]: ptnProbability(dna[i:i+k], profile) for i in range(len(dna)-k+1)}
+   return randomKey(seqProb)
+
+def gibbsSampler(seqs:Seqs, k:int, iters=3000, seedIters=300) -> Seqs:
+   """
+   GibbsSampler explores just a small subset of solutions, it may "get stuck" in a local optimum.
+   For this reason, similarly to randMotifSearch, it should be run many times with the hope that
+    one of these runs will produce the best-scoring motifs.
+   When we run GibbsSampler 2,000 times on the Subtle Motif Problem with implanted 15-mer
+    AAAAAAAAGGGGGGG (each time with new randomly selected k-mers for N = 200 iterations),
+    it returns a collection Motifs with consensus string AAAAAAgAGGGGGGt and Score(Motifs)
+    equal to 38. This score is even lower than the score of 40 expected from the implanted motifs!
+   Note: Can only get desired output sometimes, tried iters=5000, seedIters=500, no help
+   """
+   bestScore = len(seqs[0]) * len(seqs)
+   res = Seqs()
+
+   # run randMotifSearch few times to seed initial motifs
+   for i in range(seedIters):
+      motifs = randMotifSearch(seqs, k)
+      score = motifsScore(motifs)
+      if score < bestScore:
+         bestScore = score
+         res = motifs 
+
+   for run in range(iters):
+      i = random.randint(0, len(seqs)-1)
+      motifs = res[:]
+      motifs.pop(i)
+      profile = motifsProfile(motifs)
+      kmer = genKmer(seqs[i], profile, k)
+      insert(motifs, i, kmer)
+
+      if motifsScore(motifs) < motifsScore(res):
+         res = motifs
+   return res
 
 def maxPossibleMotifScore(n:int, motifLen:int) -> int:
    """

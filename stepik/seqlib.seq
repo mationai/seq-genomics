@@ -11,6 +11,14 @@ type Seqs = list[seq]
 # NOTEs:
 # list(gen()) gives "bus error": compiler bug https://github.com/seq-lang/seq/issues/102
 
+
+def insert[T](a:list[T], i:int, x:T):
+   # insert Bug: https://github.com/seq-lang/seq/issues/106 
+   if i >= len(a):
+      a.append(x)
+   else:
+      a.insert(i, x)
+
 def product[T](nums:list[T]) -> T:
    res = nums[0]
    for n in nums[1:]:
@@ -105,7 +113,7 @@ def kmerEnums(seqs:Seqs, k:int, d:int) -> Seqs:
                patterns.add(ptn)
    return list(patterns)
 
-def distOfPtnInSeqs(seqs:Seqs, pattern:seq) -> int:
+def distIn(seqs:Seqs, pattern:seq) -> int:
    """ Eg. pattern of AAA:
    d(AAA, TTACCT[TAA]C) = 1
    d(AAA, [ACG]GCGTTCG) = 2
@@ -135,7 +143,7 @@ def medianKmer(seqs:Seqs, k:int) -> seq:
    dist = len(seqs) * k
    res = s''
    for kmer in permsOfLen(k):
-      dist_ = distOfPtnInSeqs(seqs, kmer)
+      dist_ = distIn(seqs, kmer)
       if dist > dist_:
          dist = dist_
          res = kmer

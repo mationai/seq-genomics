@@ -1,6 +1,8 @@
 from sys import argv
+from seqlib import Seqs
  
 type Profile = dict[seq, list[float]]
+type SeqProbDict = dict[seq, float]
 
 def spaceSep[T](ls:list[T]) -> str:
    return ' '.join([str(k) for k in ls])
@@ -14,6 +16,20 @@ def run(n:int) -> bool:
    if res:
       print '\n'+str(n)+':'
    return res
+
+def testSeqs(a:Seqs, b=Seqs(), c=list[Seqs]()):
+   if a == b:
+      print "✓ result as expected"
+   elif len(b)==0 and len(c) > 0:
+      if any([a==x for x in c]):
+         print "✓ result as expected"
+      else:
+         print "     result:", a
+         print "exp. any of:", c
+   else:
+      print "  result:", a
+      print "Expected:", b
+      
 
 # Much simpler logic if can map(type, list)
 
