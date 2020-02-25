@@ -17,6 +17,13 @@ def run(n:int) -> bool:
       print '\n'+str(n)+':'
    return res
 
+def testSeq(a:seq, b=seqs):
+   if a == b:
+      print "✓ result as expected"
+   else:
+      print "  result:", a
+      print "Expected:", b
+
 def testSeqs(a:Seqs, b=Seqs(), c=list[Seqs]()):
    if a == b:
       print "✓ result as expected"
@@ -29,7 +36,7 @@ def testSeqs(a:Seqs, b=Seqs(), c=list[Seqs]()):
    else:
       print "  result:", a
       print "Expected:", b
-      
+
 
 # Much simpler logic if can map(type, list)
 
