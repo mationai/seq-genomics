@@ -27,29 +27,47 @@ def product[T](nums:list[T]) -> T:
       res *= n
    return res
 
-# Indexes of ptn in dna generator, with optional distance d
 def forIndexes(dna:seq, ptn:seq, d=0):
+   """ Generates indexes of ptn in dna, with optional max hamming distance d
+   """
    for i, s in enumerate(dna.split(len(ptn), 1)):
       if s - ptn <= d:
          yield i
 
 def indexesIn(dna:seq, ptn:seq, d=0) -> list[int]:
+   """ Like forIndexes(), but returns actual list, not a generator
+   """
    # return list(forIndexes(dna, ptn, d)) # bus error 
    return [i for i, s in enumerate(dna.split(len(ptn), 1)) if s - ptn <= d]
 
-# Boolean of ptn found in dna generator, with optional distance d
 def matched(dna:seq, ptn:seq, d=0) -> bool:
+   """ Returns if (bool) ptn is in dna, with optional max hamming distance d
+   """
    for s in dna.split(len(ptn), 1):
       if s - ptn <= d:
          return True
    return False
 
 def matchedAll(seqs:Seqs, ptn:seq, d=0) -> bool:
+   """ Returns if (bool) ptn is in every seq in seqs, with optional max hamming distance d
+   """
    return all([matched(s, ptn, d) for s in seqs])
 
-def permsDifferBy(ptn:seq, d:int) -> list[seq]:
+def frequentKmers(dna:seq, k:int):
+   """ Returns most freq k-mers in dna
+   """
+   cnt = dict[seq, int]()
+   for kmr in dna.split(k, 1):
+      cnt[kmr] = cnt[kmr]+1 if kmr in cnt else 0
+
+   maxCnt = max(cnt.values())
+   return [kmr for kmr in cnt.keys() if cnt[kmr] == maxCnt]
+
+def patternsDifferBy(ptn:seq, d:int) -> Seqs:
    """ 
-   Permutations of ptn differ by d or less
+   d-distance neighbors - all ptns where they differs ptn by d or less
+   Eg. 'AC', 1:
+     [CC, GC, TC, AA, AG, AT]
    Eg. 'ACT', 1:
      ACC ACT CCT TCT ACG AAT GCT ATT AGT ACA
    Eg. 'ACGT', 1:
@@ -63,7 +81,7 @@ def permsDifferBy(ptn:seq, d:int) -> list[seq]:
    elif len(ptn) == 1:
       return ACGT
    res = set[seq]()
-   suffixPerms = permsDifferBy(ptn[1:], d)
+   suffixPerms = patternsDifferBy(ptn[1:], d)
 
    for p in suffixPerms:
       # If ptn=s'ACGT', d=2:
@@ -80,16 +98,36 @@ def permsDifferBy(ptn:seq, d:int) -> list[seq]:
    return list(res)
 
 
-# Permutations of kmer differ by dist of 1 or less (much simpler vs. permsDifferBy())
-def kmerPermsGen(kmer):
+def kmersDifferBy[K](kmer:K):
+   """ patternsDifferBy()-like Generator, where input is a Kmer and and dist=1
+   """
    for i in range(len(kmer)):
       for b in (k'A', k'C', k'G', k'T'):
          if kmer[i] != b:
             yield kmer |> base(i, b)
 
-# Permutations of ptnStr of length k
+def mostFreqKmers(dna:seq, k:int, d=0, revComp=False) -> Seqs:
+   """ Returns the most most freq k-mers in dna by d-distance or less.
+   If revComp=True, account for reverse complement too.
+   """
+   cnts = dict[seq, int]()
+   if d <= 0:
+      for kmr in dna.split(k, 1):
+         cnts[kmr] = cnts[kmr]+1 if kmr in cnts else 0
+   else:
+      for i, p1 in enumerate(dna.split(k, 1)):
+         for p2 in patternsDifferBy(p1, d):
+            cnts[p2] = cnts[p2]+1 if p2 in cnts else 1
+         if revComp:
+          for p2 in patternsDifferBy(~p1, d):
+            cnts[p2] = cnts[p2]+1 if p2 in cnts else 1
+   maxCnt = max(cnts.values())
+   return [kmr for kmr in cnts.keys() if cnts[kmr] == maxCnt]
+
 def permsOfLen(k:int, ptnStr=ACGTStr) -> Seqs:
-   res = list[seq]()
+   """ Permutations of ptnStr of length k
+   """
+   res = Seqs()
    for r in range(len(ACGTStr) ** k):
       s = ''
       for j in range(k):
@@ -97,7 +135,7 @@ def permsOfLen(k:int, ptnStr=ACGTStr) -> Seqs:
          div = len(ACGTStr) ** (k-j-1)
          s += ACGTStr[(r % mod) // div]
       res.append(seq(s))
-   return res if k > 0 else list[seq]()
+   return res if k > 0 else Seqs()
 
 def kmerEnums(seqs:Seqs, k:int, d:int) -> Seqs:
    """
@@ -108,7 +146,7 @@ def kmerEnums(seqs:Seqs, k:int, d:int) -> Seqs:
    patterns = set[seq]()
    for i, s in enumerate(seqs):
       for kmer in s.split(k, 1):
-         for ptn in permsDifferBy(kmer, d):
+         for ptn in patternsDifferBy(kmer, d):
             if matchedAll(seqs[:i] + seqs[i+1:], ptn, d):
                patterns.add(ptn)
    return list(patterns)
@@ -148,3 +186,65 @@ def medianKmer(seqs:Seqs, k:int) -> seq:
          dist = dist_
          res = kmer
    return res
+
+def getClumps(dna:seq, k:int, L:int, minTimes:int) -> Seqs:
+   """ All distinct k-mers forming (L, t)-clumps in Genome.
+   i.e. distinct k-mers that occurs >= minTimes within L-length in dna
+   """ 
+   idxs = dict[seq, list[int]]()
+   for i, kmr in enumerate(dna.split(k, 1)):
+      if kmr in idxs and len(idxs[kmr]) < minTimes:
+         for idx in idxs[kmr]:
+            if i - idx + k > L:
+               idxs[kmr].pop(0)
+         idxs[kmr].append(i)
+      elif kmr not in idxs:
+         idxs[kmr] = [i]
+   return [kmr for kmr in idxs.keys() if len(idxs[kmr]) >= minTimes]
+
+def getSkew(dna:seq, skew0=0) -> list[int]:
+   """ Returns skew (running sum of ACTG->+-1/0 mapping) of sequence
+   """
+   type K1 = Kmer[1]
+   def nextSkew(k:K1, n=0):
+      d = {
+         k'A': 0,
+         k'T': 0,
+         k'C': -1,
+         k'G': 1,
+      }
+      return d[k] + n
+   skew = [skew0]
+   for i, k in enumerate(dna.kmers[K1](1)):
+      skew.append(nextSkew(k, skew[i]))
+   return skew
+
+def minSkewIndices(dna:seq):
+   """ Returns indices of min skews of sequence
+   """
+   low = min(getSkew(dna))
+   return [i for i, n in enumerate(getSkew(dna)) if n == low]
+
+def minSkewInFile(f:File) -> list[int]:
+   """ Returns indices of min skews of sequence in file
+   FASTA('path/Salmonella_enterica.fa') # will work in later releases.
+   """
+   skews = list[list[int]]()
+   lows = list[int]()
+   low = 0
+   lineLen = 0 
+
+   for i, line in f |> enumerate:
+      if i == 0:
+         continue
+      s = seq(line.replace('\r', ''))
+      if i == 1:
+         lineLen = len(s)
+      skew = getSkew(s, 0 if i==1 else skews[-1][-1])
+      low = min(low, (min(skew)))
+      skews.append(skew)
+   for i, skew in enumerate(skews):
+      for j, n in enumerate(skew):
+         if n == low:
+            lows.append(i * lineLen + j)
+   return lows

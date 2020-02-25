@@ -1,36 +1,17 @@
 from extensions import *
-from helpers import spaceSep, run, readlines, readseqs, parseInts, read
-from seqlib import permsDifferBy, kmerPermsGen, indexesIn
+from helpers import *
+from seqlib import *
+
 
 # 1.3.4 Find skew (running sum of ACTG->+-1/0 mapping) of sequence
-def getSkew(dna:seq, skew0=0) -> list[int]:
-   type K1 = Kmer[1]
-   def nextSkew(k:K1, n=0):
-      d = {
-         k'A': 0,
-         k'T': 0,
-         k'C': -1,
-         k'G': 1,
-      }
-      return d[k] + n
-   skew = [skew0]
-   for i, k in enumerate(dna.kmers[K1](1)):
-      skew.append(nextSkew(k, skew[i]))
-   return skew
-
 if run(1):
    getSkew(s'CATGGGCATCGGCCATACGCC') |> spaceSep |> echo
    getSkew(s'GAGCCACCGCGATA') |> spaceSep |> echo
 
 # 1.3.6 Find Indices of min skews of sequence
-def minSkewIndices(dna:seq):
-   low = min(getSkew(dna))
-   return [i for i, n in enumerate(getSkew(dna)) if n == low]
-
 if run(2):
    dna = readseqs('dataset_7_6.txt')[0]
    minSkewIndices(dna) |> spaceSep |> echo
-
 
 # 1.4.3 Find hamming distance
 if run(3):
@@ -57,61 +38,24 @@ if run(6):
 
 # 1.8.4 Find permutations of ptn differ by d or less
 if run(10):
-   permsDifferBy(s'ACGT', 2) |> spaceSep |> echo
+   patternsDifferBy(s'ACGT', 2) |> spaceSep |> echo
    [ptn, n] = readlines('dataset_3014_4.txt')
-   permsDifferBy(seq(ptn), int(n)) |> spaceSep |> echo
-
-if run(0):
-   list(kmerPermsGen(k'ACG')) |> spaceSep |> echo
+   patternsDifferBy(seq(ptn), int(n)) |> spaceSep |> echo
 
 
-# 1.4.7 Find most frequent Kmers by d Hamming dist in seq. If revComp=True, account for reverse complement too
-def mostFreqKmers(dna:seq, k:int, d:int, revComp=False) -> list[seq]:
-   cnts = dict[seq, int]()
-   for i, p1 in enumerate(dna.split(k, 1)):
-      for p2 in permsDifferBy(p1, d):
-         cnts[p2] = cnts[p2]+1 if p2 in cnts else 1
-      if revComp:
-       for p2 in permsDifferBy(~p1, d):
-         cnts[p2] = cnts[p2]+1 if p2 in cnts else 1
-   most = max(cnts.values())
-   return [kmr for kmr in cnts.keys() if cnts[kmr] == most]
-
+# 1.4.7 Find most frequent k-mers by d dist in seq
 if run(7):
    mostFreqKmers(s'ACGTTGCATGTCGCATGATGCATGAGAGCT', 4, 1) |> spaceSep |> echo
    [s, nsStr] = readlines('dataset_9_7.txt')
    [k, d] = parseInts(nsStr)
    mostFreqKmers(seq(s), k, d) |> spaceSep |> echo
 
+# 1.4.8 Find most frequent k-mers by d dist in seq, account for reverse complement too
 if run(8):
    [s, nsStr] = readlines('dataset_9_8.txt')
    [k, d] = parseInts(nsStr)
    mostFreqKmers(seq(s), k, d, True) |> spaceSep |> echo
 
-
 # 1.6.2 Find Indices of min skews of sequence in file
-# FASTA('path/Salmonella_enterica.fa') will work in later releases.
-def minSkewInFile(f:File) -> list[int]:
-   skews = list[list[int]]()
-   lows = list[int]()
-   low = 0
-   lineLen = 0 
-
-   for i, line in f |> enumerate:
-      if i == 0:
-         continue
-      s = seq(line.replace('\r', ''))
-      if i == 1:
-         lineLen = len(s)
-      skew = getSkew(s, 0 if i==1 else skews[-1][-1])
-      low = min(low, (min(skew)))
-      skews.append(skew)
-   for i, skew in enumerate(skews):
-      for j, n in enumerate(skew):
-         if n == low:
-            lows.append(i * lineLen + j)
-   return lows
-
 if run(9):
    minSkewInFile(read('Salmonella_enterica.txt')) |> spaceSep |> echo
-

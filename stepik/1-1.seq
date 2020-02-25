@@ -1,5 +1,5 @@
 from helpers import spaceSep, run, readlines, readseqs, parseInts
-from seqlib import indexesIn
+from seqlib import *
 
 
 # 1.2.7 Find number of occurences of ptn in dna
@@ -10,18 +10,10 @@ if run(1):
 
 
 # 1.2.10 Find most freq k-mers in dna
-def frequentKmers(dna:seq, k:int):
-   cnt = dict[seq, int]()
-   for kmr in dna.split(k, 1):
-      cnt[kmr] = cnt[kmr]+1 if kmr in cnt else 0
-
-   maxCnt = max(cnt.values())
-   return [kmr for kmr in cnt.keys() if cnt[kmr] == maxCnt]
-
 if run(2):
-   frequentKmers(s'ACGTTGCATGTCGCATGATGCATGAGAGCT', 4) |> spaceSep |> echo
+   mostFreqKmers(s'ACGTTGCATGTCGCATGATGCATGAGAGCT', 4) |> spaceSep |> echo
    [txt, cnt] = readlines('dataset_2_10.txt')
-   frequentKmers(seq(txt), int(cnt)) |> spaceSep |> echo
+   mostFreqKmers(seq(txt), int(cnt)) |> spaceSep |> echo
 
 
 # 1.3.2 Find reverse complement of dna
@@ -42,20 +34,7 @@ if run(5):
    indexesIn(dna, s'CTTGATCAT') |> spaceSep |> echo
 
 
-# 1.4.5 Find patterns forming clumps in a string - All distinct k-mers forming (L, t)-clumps in Genome.
-def getClumps(dna:seq, k:int, L:int, minTimes:int) -> list[seq]:
-   idxs = dict[seq, list[int]]()
-   
-   for i, kmr in enumerate(dna.split(k, 1)):
-      if kmr in idxs and len(idxs[kmr]) < minTimes:
-         for idx in idxs[kmr]:
-            if i - idx + k > L:
-               idxs[kmr].pop(0)
-         idxs[kmr].append(i)
-      elif kmr not in idxs:
-         idxs[kmr] = [i]
-   return [kmr for kmr in idxs.keys() if len(idxs[kmr]) >= minTimes]
-
+# 1.4.5 Find k-mers forming (L, t)-clumps in dna
 if run(6):
    dna = s'CGGACTCGACAGATGTGAAGAACGACAATGTGAAGACTCGACACGACAGAGTGAAGAGAAGAGGAAACATTGTAA'
    dna |> getClumps(5, 50, 4) |> spaceSep |> echo
@@ -67,3 +46,8 @@ if run(6):
 # 1.4.6 Find length of clumps in E-coli
 if run(7):
    readseqs('E_coli.txt')[0] |> getClumps(9, 500, 3) |> len |> echo
+
+if run(0):
+   print list(kmersDifferBy(k'AC'))
+   print list(kmersDifferBy(k'ACT'))
+   print list(kmersDifferBy(k'ACGT'))
