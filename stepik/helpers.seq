@@ -1,8 +1,6 @@
 from sys import argv
-from seqlib import Seqs
- 
-type Profile = dict[seq, list[float]]
-type SeqProbDict = dict[seq, float]
+from extensions import Seqs, Profile
+
 
 def spaceSep[T](ls:list[T]) -> str:
    return ' '.join([str(k) for k in ls])

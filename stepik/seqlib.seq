@@ -6,7 +6,6 @@ G = s'G'
 T = s'T'
 ACGT = [A, C, G, T]
 ACGTStr = 'ACGT'
-type Seqs = list[seq]
 
 # NOTEs:
 # list(gen()) gives "bus error": compiler bug https://github.com/seq-lang/seq/issues/102

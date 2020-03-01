@@ -1,7 +1,7 @@
 from math import ceil, log2
-from seqlib import *
 import random
-from helpers import Profile, SeqProbDict
+from extensions import Profile, SeqFloatDict
+from seqlib import *
 
 
 def histogram(motifs:Seqs, initCnt=1) -> dict[seq, list[int]]:
@@ -172,7 +172,7 @@ def iterRandMotifSearch(seqs:Seqs, k:int, iters=1000) -> Seqs:
          res = motifs
    return res
 
-def randomKey(seqProb:SeqProbDict) -> seq:
+def randomKey(seqProb:SeqFloatDict) -> seq:
    """
    Randomly select a key from seqProb Eg.: {'ACGTG': .5, ...}, weighted by its probs.
    """

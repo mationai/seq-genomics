@@ -1,0 +1,85 @@
+from extensions import *
+
+def concatAdjacentSeqs(seqs:Seqs) -> seq:
+   """ Concat adjacent seqs. Eg. abc, bcd -> abcd
+   """
+   res = seqs[0]
+   n = len(res)-1
+   for i, dna in enumerate(seqs[1:]): 
+      if res[i+1:] == dna[:-1]:
+         res += dna[-1]
+      else:
+         raise ValueError('pathToGenome() not possible due to seqs not continuous')
+   return res
+
+class AdjGraph:
+   ag: Adjacency
+   def __init__(self:AdjGraph, dna:Seqs, k:int):
+      if k == 0:
+         self.ag = self.fromSeqs(dna)
+      elif k == -1:
+         self.ag = self.fromKmers(dna)
+      else:
+         self.ag = self.fromSeq(dna[0], k)
+
+
+   def fromSeqs(self:AdjGraph, dna:Seqs) -> Adjacency:
+      """ Eg: ATGCG GCATG CATGC AGGCA GGCAT GGCAC =>
+      GCATG: [CATGC]
+      CATGC: [ATGCG]
+      GGCAT: [GCATG]
+      AGGCA: [GGCAT, GGCAC]
+      """
+      if len(dna) < 2:
+         raise ValueError('Can not build adjacencyGraph from seqs of length 0 - 1')
+      seqs = list(set(dna))
+      res = Adjacency()
+      for i, x in enumerate(seqs):
+         for y in seqs[0:i] + seqs[i+1:]:
+            if x[1:] == y[:-1]:
+               if x not in res:
+                  res[x] = Seqs()
+               res[x].append(y)
+      return res
+
+   def fromSeq(self:AdjGraph, dna:seq, k=4) -> Adjacency:
+      """ Returns de Bruijn graph (edge labels)
+      Eg: GCTTCTTC, 4 =>
+      GCT -> CTT
+      CTT -> TTC,TTC
+      TTC -> TCT
+      TCT -> CTT
+      """
+      if k < 2:
+         raise ValueError('Can not build adjacencyGraph from k of 0 - 1')
+      seqs = list(dna.split(k-1, 1)) # result are edge labels, so k-1
+      res = Adjacency()
+      for i, x in enumerate(seqs[:-1]):
+         if x not in res:
+            res[x] = Seqs()
+         res[x].append(seqs[i+1])
+      return res
+
+   def fromKmers(self:AdjGraph, kmers:Seqs) -> Adjacency:
+      """ Returns de Bruijn graph from list of kmers
+      Eg. GAGG CAGG GGGG GGGA CAGG AGGG GGAG =>
+      AGG -> GGG
+      CAG -> AGG,AGG
+      GAG -> AGG
+      GGA -> GAG
+      GGG -> GGA,GGG
+      """
+      k = len(kmers[0]) - 1
+      res = Adjacency()
+      for kmer in kmers:
+         x, y = list(kmer.split(k, 1))
+         if x in res:
+            res[x].append(y)
+         else:
+            res[x] = [y]
+      return res
+
+   def __str__(self:AdjGraph) -> str:
+      res = [f"{x} -> {','.join([str(y) for y in self.ag[x]])}" for x in self.ag]
+      return '\n'.join(res)
+
