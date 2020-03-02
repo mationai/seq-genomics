@@ -1,4 +1,5 @@
 from extensions import *
+from helpers import adjGraphStr
 
 def concatAdjacentSeqs(seqs:Seqs) -> seq:
    """ Concat adjacent seqs. Eg. abc, bcd -> abcd
@@ -80,6 +81,4 @@ class AdjGraph:
       return res
 
    def __str__(self:AdjGraph) -> str:
-      res = [f"{x} -> {','.join([str(y) for y in self.ag[x]])}" for x in self.ag]
-      return '\n'.join(res)
-
+      return adjGraphStr(self.ag)

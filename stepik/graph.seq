@@ -1,0 +1,68 @@
+from extensions import *
+
+def eulerianCycle(adj:Adjacency, dbg=0) -> Seqs:
+   """ See http://www.graph-magics.com/articles/euler.php
+   """
+   stack = Seqs()
+   res = Seqs()
+   keys = list(adj.keys())
+   nVertices = len(keys)
+   paths = {key: vals for key, vals in adj.items()}
+   inCnt = {key: 0 for key in keys}
+   outCnt = {key: 0 for key in keys}
+   cur = s''
+
+   # Set in/out counts map
+   for key, vals in adj.items():
+      outCnt[key] += len(vals)
+      for val in vals:
+         inCnt[val] += 1
+
+   eqIOCnts = sum(1 for k in keys if inCnt[k]==outCnt[k])
+   notEqIOKeys = [k for k in keys if inCnt[k] != outCnt[k]]
+   inGTOutKeys = [k for k in notEqIOKeys if inCnt[k] > outCnt[k]]
+   outGTInKeys = [k for k in notEqIOKeys if outCnt[k] > inCnt[k]]
+   maxResLen = sum(len(vals) for key, vals in adj.items()) + 1
+
+   # 1. Choose starting vertex
+   # If all vertices have same fanout as fanin - choose one with > 1 fanin or fanout
+   if eqIOCnts == nVertices:
+      for i, key in enumerate(keys):
+         if len(adj[key]) > 1:
+            cur = key
+            break
+
+   # If all but 2 vertices have same out-degree as in-degree
+   elif eqIOCnts == nVertices - 2:
+      if len(outGTInKeys)==len(inGTOutKeys):
+         outGTkey = outGTInKeys[0]
+         inGTkey = inGTOutKeys[0]
+         # If 1 of the 2 vertices has fanout 1 > fanin and the other is opposite then
+         #  set cur to vertex w/ fanout 1 > fanin 
+         if inCnt[inGTkey]+1 == outCnt[inGTkey] and outCnt[outGTkey]+1 == inCnt[outGTkey]:
+            cur = outGTkey
+   # Else no euler circuit or path exists
+   if cur == s'':
+      return res
+
+   # 2. Repeat until current vertex has no more out-going edges and stack is empty:
+   #  If current vertex has no out-edges
+   #   - add it to circuit and
+   #   - remove the last vertex from the stack and set it as the current one
+   #  Else
+   #   - add the vertex to the stack, take any of its out-vertices and
+   #   - remove that out-edge and set that out-vertex as the current vertex
+   while len(res) < maxResLen and cur != s'':
+      nexts = paths[cur]
+      if len(nexts) > 0:
+         stack.append(cur)
+         cur = nexts.pop(0)
+      else:
+         res.append(cur)
+         cur = stack.pop() if len(stack) > 0 else s''
+   if cur != s'':
+      res.append(cur)
+   while len(stack) > 0:
+      res.append(stack.pop())
+   res.reverse()
+   return res

@@ -1,6 +1,8 @@
 type Seqs = list[seq]
+type GraphDict = dict[str, seq]
 type Profile = dict[seq, list[float]]
 type SeqFloatDict = dict[seq, float]
+type SeqIntDict = dict[seq, int]
 type Adjacency = dict[seq, Seqs]
 
 extend seq:

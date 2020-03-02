@@ -12,7 +12,7 @@ if run(1):
 # 1.3.3 Genome Path Problem
 if run(2):
    s = parseSeqsStr('ACCGA CCGAA CGAAG GAAGC AAGCT')
-   testSeq(concatAdjacentSeqs(s), s'ACCGAAGCT')
+   testVs(concatAdjacentSeqs(s), s'ACCGAAGCT')
    print '---'
    readseqs('dataset_198_3.txt') |> concatAdjacentSeqs |> echo
 

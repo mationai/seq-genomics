@@ -1,5 +1,5 @@
 from sys import argv
-from extensions import Seqs, Profile
+from extensions import Seqs, Profile, Adjacency
 
 
 def spaceSep[T](ls:list[T]) -> str:
@@ -15,7 +15,7 @@ def run(n:int) -> bool:
       print '\n'+str(n)+':'
    return res
 
-def testSeq(a:seq, b=seqs):
+def testVs[T](a:T, b=T):
    if a == b:
       print "✓ result as expected"
    else:
@@ -26,7 +26,7 @@ def testSeqs(a:Seqs, b=Seqs(), c=list[Seqs]()):
    if a == b:
       print "✓ result as expected"
    elif len(b)==0 and len(c) > 0:
-      if any([a==x for x in c]):
+      if any(a==x for x in c):
          print "✓ result as expected"
       else:
          print "     result:", a
@@ -53,15 +53,33 @@ def parseSeqs(s:list[str], sep=' ') -> list[seq]:
 def parseProfile(d) -> Profile:
    return {seq(key): parseFloats(d[i]) for i, key in enumerate('ACGT')}
 
-def dPath(s:str):
-   return 'stepik/data/'+s
+def parseGraphStr(st:str, sep='\n') -> Adjacency:
+   res = Adjacency()
+   for s in [s.strip() for s in st.split(sep)]:
+      x, y = s.split(' -> ')
+      res[seq(x)] = [seq(z) for z in y.split(',')] if ',' in y else [seq(y)]
+   return res
 
-def read(s:str) -> File:
-   return open(dPath(s), 'r')
+def adjGraphStr(ag:Adjacency) -> str:
+   res = [f"{x} -> {','.join([str(y) for y in ag[x]])}" for x in ag]
+   return '\n'.join(res)
 
-def readlines(s:str) -> list[str]:
-   f = open(dPath(s), 'r')
+def arrowPathStr(seqs:Seqs) -> str:
+   return '->'.join([str(s) for s in seqs])
+
+def dPath(p:str):
+   return 'stepik/data/'+p
+
+def read(p:str) -> File:
+   return open(dPath(p), 'r')
+
+def readlines(p:str) -> list[str]:
+   f = open(dPath(p), 'r')
    return f.readlines()
 
-def readseqs(s:str) -> list[seq]:
-   return list(seqs(dPath(s)))
+def readseqs(p:str) -> list[seq]:
+   return list(seqs(dPath(p)))
+
+def readGraphStr(p:str) -> Adjacency:
+   s = '\n'.join(open(dPath(p), 'r').readlines())
+   return parseGraphStr(s)

@@ -50,7 +50,7 @@ def matched(dna:seq, ptn:seq, d=0) -> bool:
 def matchedAll(seqs:Seqs, ptn:seq, d=0) -> bool:
    """ Returns if (bool) ptn is in every seq in seqs, with optional max hamming distance d
    """
-   return all([matched(s, ptn, d) for s in seqs])
+   return all(matched(s, ptn, d) for s in seqs)
 
 def frequentKmers(dna:seq, k:int):
    """ Returns most freq k-mers in dna

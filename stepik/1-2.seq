@@ -1,6 +1,6 @@
 from extensions import *
 from helpers import *
-from seqlib import *
+from seqlib import minSkewIndices, minSkewInFile, getSkew, indexesIn, patternsDifferBy, mostFreqKmers
 
 
 # 1.3.4 Find skew (running sum of ACTG->+-1/0 mapping) of sequence

@@ -46,7 +46,7 @@ def motifsScore(motifs:Seqs, initCnt=1) -> int:
       for c in s'ACGT':
          if maxcount[i] < counts[c][i]:
             maxcount[i] = counts[c][i] 
-   return sum([len(motifs) - maxcount[i] for i in range(motifLen)])
+   return sum(len(motifs) - maxcount[i] for i in range(motifLen))
 
 def motifsEntropy(motifs:Seqs) -> float:
    """ Entropy is a measure of the uncertainty of a probability distribution of motifs profile
@@ -66,7 +66,7 @@ def ptnProbability(ptn:seq, profile:Profile) -> float:
    """ Probability of ptn given profile
    """
    try:
-      return product([profile[c][i] for i, c in enumerate(ptn)])
+      return product(profile[c][i] for i, c in enumerate(ptn))
    except IndexError:
       raise IndexError("profile[A|C|G|T]'s value length < ptn's length")
 
