@@ -1,7 +1,7 @@
 from extensions import *
 from helpers import adjGraphStr
 
-def concatAdjacentSeqs(seqs:Seqs) -> seq:
+def concatAdjSeqs(seqs:Seqs) -> seq:
    """ Concat adjacent seqs. Eg. abc, bcd -> abcd
    """
    res = seqs[0]
@@ -15,21 +15,24 @@ def concatAdjacentSeqs(seqs:Seqs) -> seq:
 
 class AdjGraph:
    ag: Adjacency
-   def __init__(self:AdjGraph, dna:Seqs, k:int):
-      if k == 0:
-         self.ag = self.fromSeqs(dna)
-      elif k == -1:
-         self.ag = self.fromKmers(dna)
-      else:
-         self.ag = self.fromSeq(dna[0], k)
+   def __init__(self:AdjGraph, dna:Seqs, method:str, k:int):
+      """ Returns de Bruijn graph via:
+      """
+      match method:
+         case 'seq':
+            self.ag = self.fromSeq(dna[0], k)
+         case 'overlap': # more incorrect results than 'kmers'
+            self.ag = self.viaOverlap(dna)
+         case _:
+            self.ag = self.fromKmers(dna)
 
-
-   def fromSeqs(self:AdjGraph, dna:Seqs) -> Adjacency:
+   def viaOverlap(self:AdjGraph, dna:Seqs) -> Adjacency:
       """ Eg: ATGCG GCATG CATGC AGGCA GGCAT GGCAC =>
-      GCATG: [CATGC]
-      CATGC: [ATGCG]
-      GGCAT: [GCATG]
-      AGGCA: [GGCAT, GGCAC]
+      IndexError: list index out of range
+      GCATG -> CATGC
+      CATGC -> ATGCG
+      GGCAT -> GCATG
+      AGGCA -> GGCAT,GGCAC
       """
       if len(dna) < 2:
          raise ValueError('Can not build adjacencyGraph from seqs of length 0 - 1')
@@ -43,10 +46,30 @@ class AdjGraph:
                res[x].append(y)
       return res
 
+   def fromKmers(self:AdjGraph, kmers:Seqs) -> Adjacency:
+      """ Returns Adjacency Graph where each node value is of length kmer-length - 1 
+      Eg. GAGG CAGG GGGG GGGA CAGG AGGG GGAG =>
+      AGG -> GGG
+      CAG -> AGG,AGG
+      GAG -> AGG
+      GGA -> GAG
+      GGG -> GGA,GGG
+      Can't handle 2-mers, eg. AG AT AA GA GG GT TA TG TT AT -> 
+      AGATAATGGTT (overlap worst, -> AATGGAAGGTGATATTGTAGAGTTAA)
+      AAGTTGGATAT - expected
+      """
+      k = len(kmers[0]) - 1
+      res = Adjacency()
+      for kmer in kmers:
+         x, y = list(kmer.split(k, 1))
+         if x in res:
+            res[x].append(y)
+         else:
+            res[x] = [y]
+      return res
+
    def fromSeq(self:AdjGraph, dna:seq, k=4) -> Adjacency:
-      """ Returns de Bruijn graph (edge labels)
-      Eg: GCTTCTTC, 4 =>
-      GCT -> CTT
+      """ Eg: CTTCTTC, 4 =>
       CTT -> TTC,TTC
       TTC -> TCT
       TCT -> CTT
@@ -59,25 +82,6 @@ class AdjGraph:
          if x not in res:
             res[x] = Seqs()
          res[x].append(seqs[i+1])
-      return res
-
-   def fromKmers(self:AdjGraph, kmers:Seqs) -> Adjacency:
-      """ Returns de Bruijn graph from list of kmers
-      Eg. GAGG CAGG GGGG GGGA CAGG AGGG GGAG =>
-      AGG -> GGG
-      CAG -> AGG,AGG
-      GAG -> AGG
-      GGA -> GAG
-      GGG -> GGA,GGG
-      """
-      k = len(kmers[0]) - 1
-      res = Adjacency()
-      for kmer in kmers:
-         x, y = list(kmer.split(k, 1))
-         if x in res:
-            res[x].append(y)
-         else:
-            res[x] = [y]
       return res
 
    def __str__(self:AdjGraph) -> str:

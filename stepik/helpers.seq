@@ -15,25 +15,19 @@ def run(n:int) -> bool:
       print '\n'+str(n)+':'
    return res
 
-def testVs[T](a:T, b=T):
-   if a == b:
+def testVs[T](a:T, b:list[T]):
+   if any(a==x for x in b):
       print "✓ result as expected"
    else:
-      print "  result:", a
-      print "Expected:", b
+      print "     result:", a
+      print "exp. any of:", b
 
-def testSeqs(a:Seqs, b=Seqs(), c=list[Seqs]()):
+def testColl[T](a:list[T], b:list[T]):
    if a == b:
       print "✓ result as expected"
-   elif len(b)==0 and len(c) > 0:
-      if any(a==x for x in c):
-         print "✓ result as expected"
-      else:
-         print "     result:", a
-         print "exp. any of:", c
    else:
       print "  result:", a
-      print "Expected:", b
+      print "expected:", b
 
 
 # Much simpler logic if can map(type, list)

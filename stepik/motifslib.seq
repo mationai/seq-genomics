@@ -66,7 +66,7 @@ def ptnProbability(ptn:seq, profile:Profile) -> float:
    """ Probability of ptn given profile
    """
    try:
-      return product(profile[c][i] for i, c in enumerate(ptn))
+      return product([profile[c][i] for i, c in enumerate(ptn)])
    except IndexError:
       raise IndexError("profile[A|C|G|T]'s value length < ptn's length")
 

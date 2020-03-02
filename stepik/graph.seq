@@ -1,4 +1,5 @@
 from extensions import *
+from adjGraph import *
 
 def eulerianPath(adj:Adjacency, cycleOnly=False) -> Seqs:
    """ See http://www.graph-magics.com/articles/euler.php
@@ -46,12 +47,12 @@ def eulerianPath(adj:Adjacency, cycleOnly=False) -> Seqs:
    if cycleOnly:
       return res
    else: # finding path, set cur to key that has fanout > fanin
-      cur = outGTInKeys[0]
+      cur = outGTInKeys[0] if len(outGTInKeys) > 0 else keys[0]
 
    # 2. Repeat until current vertex has no more out-going edges and stack is empty:
    while len(res) < maxResLen and cur != s'':
       nexts = Seqs() if not cycleOnly and cur not in paths else paths[cur]
-      
+
       # If current vertex has no out-edges, add it to cycle and
       # remove the last vertex from the stack and set it as the current one
       if len(nexts) > 0:
@@ -68,3 +69,8 @@ def eulerianPath(adj:Adjacency, cycleOnly=False) -> Seqs:
       res.append(stack.pop())
    res.reverse()
    return res
+   
+def reconstructGenome(seqs:Seqs, method='kmers') -> seq: 
+   ag = AdjGraph(seqs, method, 0).ag
+   return eulerianPath(ag, False) |> concatAdjSeqs
+
