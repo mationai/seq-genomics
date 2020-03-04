@@ -2,6 +2,7 @@ from extensions import *
 from helpers import *
 from adjGraph import *
 from graph import *
+from seqlib import permsOfLen
 
 # 1.2.2
 if run(1):
@@ -41,7 +42,7 @@ if run(1):
    1 -> 2
    2 -> 0
    3 -> 0'''
-   testVs(eulerianPath(parseGraphStr(s), True) |> arrowPathStr, ['0->3->0->1->2->0'])
+   eulerianPath(parseGraphStr(s), True) |> arrowPathStr |> testVs('0->3->0->1->2->0')
 if run(2):
    ag = readGraphStr('dataset_203_2.txt')
    print eulerianPath(ag, True) |> arrowPathStr
@@ -62,25 +63,25 @@ if run(3):
 
 # 1.2.7
 if run(4):
-   s =  parseSeqsStr('CTTA ACCA TACC GGCT GCTT TTAC')
-   testVs(reconstructGenome(s, 'kmers'), [s'GGCTTACCA']) # 'overlap' works too
+   ss =  parseSeqsStr('CTTA ACCA TACC GGCT GCTT TTAC')
+   reconstructGenome(ss, 'kmers') |> testVs(s'GGCTTACCA') # 'overlap' works too
 
-   s = parseSeqsStr('AAC AAC ACG ACT CGA GAA')
-   testVs(reconstructGenome(s, 'kmers'), [s'AACGAACT']) # 'overlap' works too
+   ss = parseSeqsStr('AAC AAC ACG ACT CGA GAA')
+   reconstructGenome(ss, 'kmers') |> testVs(s'AACGAACT') # 'overlap' works too
 
-   s = parseSeqsStr('CTAC CTCC TCCT ACTC CCTC CCTA TACT')
-   testVs(reconstructGenome(s, 'kmers'), [s'CCTACTCCTC', s'CCTCCTACTC'])
-                           # 'overlap' -> TCCTACTCCTCC
+   ss = parseSeqsStr('CTAC CTCC TCCT ACTC CCTC CCTA TACT')
+   reconstructGenome(ss, 'kmers') |> testIn([s'CCTACTCCTC', s'CCTCCTACTC'])
+                        # with 'overlap' -> TCCTACTCCTCC
 
-   s = parseSeqsStr('CCC CCC CCC TCC CCC CCG CCC CCC CCC')
-   testVs(reconstructGenome(s, 'kmers'), [s'TCCCCCCCCCG'])
+   ss = parseSeqsStr('CCC CCC CCC TCC CCC CCG CCC CCC CCC')
+   reconstructGenome(ss, 'kmers') |> testVs(s'TCCCCCCCCCG')
 
-   s = parseSeqsStr('AG AT AA GA GG GT TA TG TT AT')
-   testVs(reconstructGenome(s, 'kmers'), [s'AAGTTGGATAT'])
-   # 'overlap': AATGGAAGGTGATATTGTAGAGTTAA. AGATAATGGTT <- kmers (wrong too)
+   ss = parseSeqsStr('AG AT AA GA GG GT TA TG TT AT')
+   reconstructGenome(ss, 'kmers') |> testVs(s'AAGTTGGATAT')
+   # 'overlap' -> 28-mer genome.   'kmer' -> AGATAATGGTT (wrong too)
 
 if run(5):
    l = readlines('dataset_203_7.txt')
    print reconstructGenome(parseSeqs(l[1:]), 'kmers')
 
-# 1.2.8
+# 1.2.8 - only 1 k-universal circular path and its reverse, so 2

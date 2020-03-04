@@ -4,13 +4,18 @@ from helpers import adjGraphStr
 def concatAdjSeqs(seqs:Seqs) -> seq:
    """ Concat adjacent seqs. Eg. abc, bcd -> abcd
    """
+   if len(seqs) == 1:
+      return seqs[0]
+   if len(seqs) < 1:
+      print 'WARN: Returning empty sequence due to seqs of length 0'
+      return s''
    res = seqs[0]
    n = len(res)-1
    for i, dna in enumerate(seqs[1:]): 
       if res[i+1:] == dna[:-1]:
          res += dna[-1]
       else:
-         raise ValueError('pathToGenome() not possible due to seqs not continuous')
+         raise ValueError('concatAdjSeqs() not possible due to seqs not continuous')
    return res
 
 class AdjGraph:
@@ -58,7 +63,13 @@ class AdjGraph:
       AGATAATGGTT (overlap worst, -> AATGGAAGGTGATATTGTAGAGTTAA)
       AAGTTGGATAT - expected
       """
+      if len(kmers) == 0:
+         raise ValueError('Can not build adjacencyGraph from empty seqs')
+
+      # Set k to be length of k-mer to look at, not lenght input kmers 
       k = len(kmers[0]) - 1
+      if k < 1:
+         raise ValueError('Can not build adjacencyGraph via "kmers" method with k=0')
       res = Adjacency()
       for kmer in kmers:
          x, y = list(kmer.split(k, 1))

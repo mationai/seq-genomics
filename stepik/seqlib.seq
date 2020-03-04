@@ -127,12 +127,12 @@ def permsOfLen(k:int, ptnStr=ACGTStr) -> Seqs:
    """ Permutations of ptnStr of length k
    """
    res = Seqs()
-   for r in range(len(ACGTStr) ** k):
+   for r in range(len(ptnStr) ** k):
       s = ''
       for j in range(k):
-         mod = len(ACGTStr) ** (k-j)
-         div = len(ACGTStr) ** (k-j-1)
-         s += ACGTStr[(r % mod) // div]
+         mod = len(ptnStr) ** (k-j)
+         div = len(ptnStr) ** (k-j-1)
+         s += ptnStr[(r % mod) // div]
       res.append(seq(s))
    return res if k > 0 else Seqs()
 

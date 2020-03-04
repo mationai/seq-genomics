@@ -1,20 +1,20 @@
 from extensions import *
 from adjGraph import *
 
-def eulerianPath(adj:Adjacency, cycleOnly=False) -> Seqs:
+def eulerianPath(ag:Adjacency, cycleOnly=False) -> Seqs:
    """ See http://www.graph-magics.com/articles/euler.php
    """
    stack = Seqs()
    res = Seqs()
-   keys = list(adj.keys())
+   keys = list(ag.keys())
    nVertices = len(keys)
-   paths = {key: vals for key, vals in adj.items()}
+   paths = {key: vals for key, vals in ag.items()}
    inCnt = {key: 0 for key in keys}
    outCnt = {key: 0 for key in keys}
    cur = s''
 
    # Set in/out counts map
-   for key, vals in adj.items():
+   for key, vals in ag.items():
       outCnt[key] += len(vals)
       for val in vals:
          inCnt[val] = 1 if val not in inCnt else inCnt[val] + 1
@@ -23,15 +23,22 @@ def eulerianPath(adj:Adjacency, cycleOnly=False) -> Seqs:
    notEqIOKeys = [k for k in keys if inCnt[k] != outCnt[k]]
    inGTOutKeys = [k for k in notEqIOKeys if inCnt[k] > outCnt[k]]
    outGTInKeys = [k for k in notEqIOKeys if outCnt[k] > inCnt[k]]
-   maxResLen = sum(len(vals) for key, vals in adj.items()) + 1
+   maxResLen = sum(len(vals) for key, vals in ag.items()) + 1
+
+   if len(keys) == 0:
+      return res
+   elif len(keys) == 1:
+      cur = keys[0]
 
    # 1. Choose starting vertex
    # If all vertices have same fanout as fanin - choose one with > 1 fanin or fanout
-   if eqIOCnts == nVertices:
+   elif eqIOCnts == nVertices:
       for i, key in enumerate(keys):
-         if len(adj[key]) > 1:
+         if len(ag[key]) > 1:
             cur = key
             break
+      if cur == s'':
+         cur = keys[0]
 
    # If all but 2 vertices have same out-degree as in-degree
    elif eqIOCnts == nVertices - 2:
@@ -43,10 +50,12 @@ def eulerianPath(adj:Adjacency, cycleOnly=False) -> Seqs:
          if inCnt[inGTkey]+1 == outCnt[inGTkey] and outCnt[outGTkey]+1 == inCnt[outGTkey]:
             cur = outGTkey
 
-   # Else no euler cycle exists
-   if cycleOnly:
+   # Else no euler cycle exists if cur isn't set
+   if cycleOnly and cur == s'':
       return res
-   else: # finding path, set cur to key that has fanout > fanin
+
+   # Path finding, set cur to key that has fanout > fanin
+   if not cycleOnly:
       cur = outGTInKeys[0] if len(outGTInKeys) > 0 else keys[0]
 
    # 2. Repeat until current vertex has no more out-going edges and stack is empty:
@@ -63,14 +72,15 @@ def eulerianPath(adj:Adjacency, cycleOnly=False) -> Seqs:
       else:
          res.append(cur)
          cur = stack.pop() if len(stack) > 0 else s''
+
    if cur != s'':
       res.append(cur)
    while len(stack) > 0:
       res.append(stack.pop())
    res.reverse()
    return res
-   
-def reconstructGenome(seqs:Seqs, method='kmers') -> seq: 
+
+def reconstructGenome(seqs:Seqs, method='kmers', cycleOnly=False) -> seq: 
    ag = AdjGraph(seqs, method, 0).ag
-   return eulerianPath(ag, False) |> concatAdjSeqs
+   return eulerianPath(ag, cycleOnly) |> concatAdjSeqs
 

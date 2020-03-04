@@ -9,6 +9,11 @@ extend seq:
    def __add__(s1:seq, s2:seq):
       return seq(str(s1) + str(s2))
 
+   def reverse(s1:seq):
+      st = str(s1)
+      # return seq(s[::-1]) # bug - https://github.com/seq-lang/seq/issues/113
+      return seq(''.join([s for s in reversed(st)]))
+
    def __sub__(s1:seq, s2:seq) -> int:
       smLen = len(s1) if len(s1) < len(s2) else len(s2)
       diff = len([1 for i in range(smLen) if s1[i] != s2[i]])

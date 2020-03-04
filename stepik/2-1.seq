@@ -4,40 +4,39 @@ from adjGraph import *
 
 # 1.2.3 Get all k-mers in seq (including repeats)
 if run(1):
-   list(s'CAATCCAAC'.split(5, 1)) |> nlSep |> echo
-   print '---'
+   print list(s'CAATCCAAC'.split(5, 1)) |> nlSep
+if run(2):
    l = readlines('dataset_197_3.txt')
-   list(seq(l[1]).split(int(l[0]), 1)) |> nlSep |> echo
+   print list(seq(l[1]).split(int(l[0]), 1)) |> nlSep
 
 # 1.3.3 Genome Path Problem
-if run(2):
+if run(3):
    s = parseSeqsStr('ACCGA CCGAA CGAAG GAAGC AAGCT')
-   testVs(concatAdjSeqs(s), [s'ACCGAAGCT'])
-   print '---'
-   readseqs('dataset_198_3.txt') |> concatAdjSeqs |> echo
+   concatAdjSeqs(s) |> testVs(s'ACCGAAGCT')
+if run(4):
+   print readseqs('dataset_198_3.txt') |> concatAdjSeqs
 
 # 1.3.10
-if run(3):
+if run(5):
    s = parseSeqsStr('ATGCG GCATG CATGC AGGCA GGCAT GGCAC')
    print AdjGraph(s, 'overlap', 0)
    s = parseSeqsStr('CT TT TT')
    print AdjGraph(s, 'overlap', 0)
-if run(4):
+if run(6):
    s = readseqs('dataset_198_10.txt')
    print AdjGraph(s, 'overlap', 0)
 
 # 1.4.6 
-if run(5):
+if run(7):
    print AdjGraph([s'AAGATTCTCTAAGA'], 'seq', 4)
-   print '---'
    print AdjGraph([s'GCTTCTTC'], 'seq', 4)
-if run(6):
+if run(8):
    l = readlines('dataset_199_6.txt')
    print AdjGraph([seq(l[1])], 'seq', int(l[0]))
 
 # 1.5.8 
-if run(7):
+if run(9):
    print AdjGraph(parseSeqsStr('GAGG CAGG GGGG GGGA CAGG AGGG GGAG'), 'kmers', 0)
-if run(8):
+if run(10):
    dna = readseqs('dataset_200_8.txt')
    print AdjGraph(dna, 'kmers', 0)

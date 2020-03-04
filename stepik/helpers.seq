@@ -15,14 +15,17 @@ def run(n:int) -> bool:
       print '\n'+str(n)+':'
    return res
 
-def testVs[T](a:T, b:list[T]):
+def testIn[T](a:T, b:list[T]):
    if any(a==x for x in b):
       print "✓ result as expected"
+   elif len(b)==1:
+      print "  result:", a
+      print "expected:", b[0]
    else:
       print "     result:", a
-      print "exp. any of:", b
+      print "exp one of:", b
 
-def testColl[T](a:list[T], b:list[T]):
+def testVs[T](a:T, b:T):
    if a == b:
       print "✓ result as expected"
    else:
@@ -47,10 +50,10 @@ def parseSeqs(s:list[str], sep=' ') -> list[seq]:
 def parseProfile(d) -> Profile:
    return {seq(key): parseFloats(d[i]) for i, key in enumerate('ACGT')}
 
-def parseGraphStr(st:str, sep='\n') -> Adjacency:
+def parseGraphStr(st:str, sep='\n', arrow=' -> ') -> Adjacency:
    res = Adjacency()
    for s in [s.strip() for s in st.split(sep)]:
-      x, y = s.split(' -> ')
+      x, y = s.split(arrow)
       res[seq(x)] = [seq(z) for z in y.split(',')] if ',' in y else [seq(y)]
    return res
 
