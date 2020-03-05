@@ -16,12 +16,12 @@ if run(1):
    7 -> 9
    8 -> 7
    9 -> 6'''
-   print eulerianPath(parseGraphStr(s), True) |> arrowPathStr
+   print eulerianPath(parseGraphStr(s), 'cycle') |> arrowPathStr
 
    s = '''1 -> 2
    2 -> 1,2
    0 -> 1'''
-   print eulerianPath(parseGraphStr(s), True) |> arrowPathStr
+   print eulerianPath(parseGraphStr(s), 'cycle') |> arrowPathStr
 
    s = '''1 -> 10
    10 -> 2,3,4
@@ -29,23 +29,23 @@ if run(1):
    3 -> 10
    4 -> 5
    5 -> 10'''
-   print eulerianPath(parseGraphStr(s), True) |> arrowPathStr
+   print eulerianPath(parseGraphStr(s), 'cycle') |> arrowPathStr
 
    s = '''0 -> 1,2,3,4
    1 -> 0,2,3,4
    2 -> 0,1,3,4
    3 -> 0,1,2,4
    4 -> 0,1,2,3'''
-   print eulerianPath(parseGraphStr(s), True) |> arrowPathStr
+   print eulerianPath(parseGraphStr(s), 'cycle') |> arrowPathStr
 
    s = '''0 -> 3,1
    1 -> 2
    2 -> 0
    3 -> 0'''
-   eulerianPath(parseGraphStr(s), True) |> arrowPathStr |> testVs('0->3->0->1->2->0')
+   eulerianPath(parseGraphStr(s), 'cycle') |> arrowPathStr |> testVs('0->3->0->1->2->0')
 if run(2):
    ag = readGraphStr('dataset_203_2.txt')
-   print eulerianPath(ag, True) |> arrowPathStr
+   print eulerianPath(ag, 'cycle') |> arrowPathStr
 
 # 1.2.6
 if run(3):
@@ -57,9 +57,9 @@ if run(3):
    7 -> 8
    8 -> 9
    9 -> 6'''
-   print eulerianPath(parseGraphStr(s), False) |> arrowPathStr
+   eulerianPath(parseGraphStr(s), 'path') |> arrowPathStr |> testVs('6->7->8->9->6->3->0->2->1->3->4')
    ag = readGraphStr('dataset_203_6.txt')
-   print eulerianPath(ag, False) |> arrowPathStr
+   print eulerianPath(ag, 'path') |> arrowPathStr
 
 # 1.2.7
 if run(4):
@@ -85,3 +85,16 @@ if run(5):
    print reconstructGenome(parseSeqs(l[1:]), 'kmers')
 
 # 1.2.8 - only 1 k-universal circular path and its reverse, so 2
+if run(6):
+   kmers = permsOfLen(3, '01')
+   r = reconstructGenome(kmers, 'kmers', 'universal')
+   print r # 00101110 
+
+   kmers = permsOfLen(4, '01')
+   r = reconstructGenome(kmers, 'kmers', 'universal')
+   print r # 0010011010111100
+
+if run(7):
+   kmers = permsOfLen(9, '01')
+   r = reconstructGenome(kmers, 'kmers', 'universal')
+   reconstructGenome(kmers, 'kmers', 'universal') |> testVs(s'10100000000010000001010000010010000011000000011010000100010000101010000110010000111000000111010100010010100011000100011010100100010100101010100110000100110010100111000100111011000001011000011011000101011000110011000111001000111011100001011100011011100101011100110011100111100000111100100100101100100110100100111101000101101000111101100101101100110101100111110000111110100101110100110110100111111000101111000111111100101111100110111101010101101010111101110101101110110101110111110110110111111010111111111011110011')
