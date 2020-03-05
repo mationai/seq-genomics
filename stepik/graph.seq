@@ -82,6 +82,9 @@ def eulerianPath(ag:Adjacency, kind='cycle') -> Seqs:
    return res
 
 def reconstructGenome(seqs:Seqs, method='kmers', kind='cycle') -> seq: 
+   """ Reconstruct genome from seqs with method and kind, where
+   kind = 'cycle' | 'path' | 'universal'
+   """
    ag = AdjGraph(seqs, method, 0).ag
    dna = eulerianPath(ag, kind) |> concatAdjSeqs
    if kind != 'universal':
@@ -91,4 +94,11 @@ def reconstructGenome(seqs:Seqs, method='kmers', kind='cycle') -> seq:
    isOdd = k % 2 == 1 
    res = dna[i:-i]
    return res[1:] if isOdd else res
+
+def pairedComposition(ptn:seq, k:int, d:int) -> Pairs:
+   """ Returns pairs of ptn formed by its (k, d)-mer
+   """
+   s = list(ptn.split(k, 1))
+   l = len(ptn) -k -d -2
+   return [(x, y) for x,y in zip(s[:l], s[k+d:])]
 

@@ -1,5 +1,5 @@
 from sys import argv
-from extensions import Seqs, Profile, Adjacency
+from extensions import *
 
 
 def spaceSep[T](ls:list[T]) -> str:
@@ -80,3 +80,6 @@ def readseqs(p:str) -> list[seq]:
 def readGraphStr(p:str) -> Adjacency:
    s = '\n'.join(open(dPath(p), 'r').readlines())
    return parseGraphStr(s)
+
+def pairsStrs(pairs:Pairs, sep='|') -> Strs:
+   return [f"({a}{sep}{b})" for a, b in pairs]
