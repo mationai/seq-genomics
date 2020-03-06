@@ -81,5 +81,3 @@ def readGraphStr(p:str) -> Adjacency:
    s = '\n'.join(open(dPath(p), 'r').readlines())
    return parseGraphStr(s)
 
-def pairsStrs(pairs:Pairs, sep='|') -> Strs:
-   return [f"({a}{sep}{b})" for a, b in pairs]

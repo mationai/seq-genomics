@@ -4,7 +4,7 @@ from adjGraph import *
 from graph import *
 from seqlib import permsOfLen
 
-# 1.2.2
+# 1.2.2 - Find Eulerian Cycle
 if run(1):
    s = '''0 -> 3
    1 -> 0
@@ -16,12 +16,12 @@ if run(1):
    7 -> 9
    8 -> 7
    9 -> 6'''
-   print eulerianPath(parseGraphStr(s), 'cycle') |> arrowPathStr
+   ss = eulerianPath(parseGraphStr(s), 'cycle')
+   ss |> arrowPathStr |> testVs('2->1->0->3->2->6->8->7->9->6->5->4->2')
 
-   s = '''1 -> 2
-   2 -> 1,2
-   0 -> 1'''
-   print eulerianPath(parseGraphStr(s), 'cycle') |> arrowPathStr
+   s = '1 -> 2|2 -> 1,2|0 -> 1'
+   ss = eulerianPath(parseGraphStr(s, '|'), 'cycle')
+   ss |> arrowPathStr |> testVs('')
 
    s = '''1 -> 10
    10 -> 2,3,4
@@ -29,26 +29,26 @@ if run(1):
    3 -> 10
    4 -> 5
    5 -> 10'''
-   print eulerianPath(parseGraphStr(s), 'cycle') |> arrowPathStr
+   ss = eulerianPath(parseGraphStr(s), 'cycle')
+   ss |> arrowPathStr |> testVs('10->2->1->10->3->10->4->5->10')
 
    s = '''0 -> 1,2,3,4
    1 -> 0,2,3,4
    2 -> 0,1,3,4
    3 -> 0,1,2,4
    4 -> 0,1,2,3'''
-   print eulerianPath(parseGraphStr(s), 'cycle') |> arrowPathStr
+   ss = eulerianPath(parseGraphStr(s), 'cycle')
+   ss |> arrowPathStr |> testVs('0->1->0->2->0->3->0->4->1->2->1->3->1->4->2->3->2->4->3->4->0')
 
-   s = '''0 -> 3,1
-   1 -> 2
-   2 -> 0
-   3 -> 0'''
-   eulerianPath(parseGraphStr(s), 'cycle') |> arrowPathStr |> testVs('0->3->0->1->2->0')
-if run(2):
+   s = '0 -> 3,1|1 -> 2|2 -> 0|3 -> 0'
+   ss = eulerianPath(parseGraphStr(s, '|'), 'cycle')
+   ss |> arrowPathStr |> testVs('0->3->0->1->2->0')
+
    ag = readGraphStr('dataset_203_2.txt')
    print eulerianPath(ag, 'cycle') |> arrowPathStr
 
-# 1.2.6
-if run(3):
+# 1.2.6 - Find Eulerian Path
+if run(2):
    s = '''0 -> 2
    1 -> 3
    2 -> 1
@@ -61,8 +61,8 @@ if run(3):
    ag = readGraphStr('dataset_203_6.txt')
    print eulerianPath(ag, 'path') |> arrowPathStr
 
-# 1.2.7
-if run(4):
+# 1.2.7 - Reconstruct Genome from scrambled seqs
+if run(3):
    ss =  parseSeqsStr('CTTA ACCA TACC GGCT GCTT TTAC')
    reconstructGenome(ss, 'kmers') |> testVs(s'GGCTTACCA') # 'overlap' works too
 
@@ -71,40 +71,47 @@ if run(4):
 
    ss = parseSeqsStr('CTAC CTCC TCCT ACTC CCTC CCTA TACT')
    reconstructGenome(ss, 'kmers') |> testIn([s'CCTACTCCTC', s'CCTCCTACTC'])
-                        # with 'overlap' -> TCCTACTCCTCC
+                       # 'overlap'  bad  ->  TCCTACTCCTCC
 
    ss = parseSeqsStr('CCC CCC CCC TCC CCC CCG CCC CCC CCC')
    reconstructGenome(ss, 'kmers') |> testVs(s'TCCCCCCCCCG')
 
    ss = parseSeqsStr('AG AT AA GA GG GT TA TG TT AT')
-   reconstructGenome(ss, 'kmers') |> testVs(s'AAGTTGGATAT')
-   # 'overlap' -> 28-mer genome.   'kmer' -> AGATAATGGTT (wrong too)
+   reconstructGenome(ss, 'kmers') |> testVs(s'AAGTTGGATAT') # 'overlap' bad -> 28-mer genome
 
-if run(5):
    l = readlines('dataset_203_7.txt')
    print reconstructGenome(parseSeqs(l[1:]), 'kmers')
 
-# 1.2.8 - only 1 k-universal circular path and its reverse, so 2
-if run(6):
+# 1.2.9 - only 1 k-Universal Circular Path and its reverse, so answer = 2
+
+# 1.2.11 - Find k-Universal Circular String
+if run(4):
    kmers = permsOfLen(3, '01')
-   r = reconstructGenome(kmers, 'kmers', 'universal')
-   print r # 00101110 
+   s = reconstructGenome(kmers, 'kmers', 'universal')
+   s |> testVs(s'00101110')
 
    kmers = permsOfLen(4, '01')
-   r = reconstructGenome(kmers, 'kmers', 'universal')
-   print r # 0010011010111100
+   s = reconstructGenome(kmers, 'kmers', 'universal')
+   s |> testVs(s'0010011010111100')
 
-if run(7):
    kmers = permsOfLen(9, '01')
-   r = reconstructGenome(kmers, 'kmers', 'universal')
-   reconstructGenome(kmers, 'kmers', 'universal') |> testVs(s'10100000000010000001010000010010000011000000011010000100010000101010000110010000111000000111010100010010100011000100011010100100010100101010100110000100110010100111000100111011000001011000011011000101011000110011000111001000111011100001011100011011100101011100110011100111100000111100100100101100100110100100111101000101101000111101100101101100110101100111110000111110100101110100110110100111111000101111000111111100101111100110111101010101101010111101110101101110110101110111110110110111111010111111111011110011')
+   s = reconstructGenome(kmers, 'kmers', 'universal')
+   s |> testVs(s'10100000000010000001010000010010000011000000011010000100010000101010000110010000111000000111010100010010100011000100011010100100010100101010100110000100110010100111000100111011000001011000011011000101011000110011000111001000111011100001011100011011100101011100110011100111100000111100100100101100100110100100111101000101101000111101100101101100110101100111110000111110100101110100110110100111111000101111000111111100101111100110111101010101101010111101110101101110110101110111110110110111111010111111111011110011')
 
-if run(8):
+# 1.3 - Assembling Genomes from Read-Pairs
+# 1.3.7 - Generate (k, d)-mer Composition of a pattern 
+if run(5):
    ptn = s'TAATGCCATGGGATGTT'
-   strs = pairedComposition(ptn, 3, 1) |> pairsStrs
-   strs.sort()
-   strs |> spaceSep |> testVs('(AAT|CCA) (ATG|CAT) (ATG|GAT) (CAT|GGA) (CCA|GGG) (GCC|TGG) (GGA|GTT) (GGG|TGT) (TAA|GCC) (TGC|ATG) (TGG|ATG)')
+   pairs = pairedComposition(ptn, 3, 1)
+   pairs |> pairsStr |> testVs('(AAT|CCA) (ATG|CAT) (ATG|GAT) (CAT|GGA) (CCA|GGG) (GCC|TGG) (GGA|GTT) (GGG|TGT) (TAA|GCC) (TGC|ATG) (TGG|ATG)')
 
-   strs = pairedComposition(ptn, 3, 2) |> pairsStrs
-   strs.sort()
-   strs |> spaceSep |> testVs('(AAT|CAT) (ATG|ATG) (ATG|ATG) (CAT|GAT) (CCA|GGA) (GCC|GGG) (GGG|GTT) (TAA|CCA) (TGC|TGG) (TGG|TGT)')
+   pairs = pairedComposition(ptn, 3, 2)
+   pairs |> pairsStr |> testVs('(AAT|CAT) (ATG|ATG) (ATG|ATG) (CAT|GAT) (CCA|GGA) (GCC|GGG) (GGG|GTT) (TAA|CCA) (TGC|TGG) (TGG|TGT)')
+
+# if run(6):
+#    'AG|AG AG|TG CA|CT (CT|CA), (CT|CT), (GC|GC), (GC|GC), (GC|GC), and (TG|TG).
+#    kmers = permsOfLen(4, '01')
+#    s = reconstructGenome(kmers, 'kmers', 'pairs')
+#    s |> testVs(s'0010011010111100')
+# if run(7):
+# if run(8):

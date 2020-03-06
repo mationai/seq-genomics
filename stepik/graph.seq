@@ -1,5 +1,6 @@
 from extensions import *
 from adjGraph import *
+from helpers import *
 
 def eulerianPath(ag:Adjacency, kind='cycle') -> Seqs:
    """ See http://www.graph-magics.com/articles/euler.php
@@ -61,7 +62,6 @@ def eulerianPath(ag:Adjacency, kind='cycle') -> Seqs:
    # 2. Repeat until current vertex has no more out-going edges and stack is empty:
    while len(res) < maxResLen and cur != s'':
       nexts = Seqs() if kind != 'cycle' and cur not in paths else paths[cur]
-      # nexts = Seqs() if not cycleOnly and cur not in paths else paths[cur]
 
       # If current vertex has no out-edges, add it to cycle and
       # remove the last vertex from the stack and set it as the current one
@@ -82,8 +82,8 @@ def eulerianPath(ag:Adjacency, kind='cycle') -> Seqs:
    return res
 
 def reconstructGenome(seqs:Seqs, method='kmers', kind='cycle') -> seq: 
-   """ Reconstruct genome from seqs with method and kind, where
-   kind = 'cycle' | 'path' | 'universal'
+   """ Reconstruct genome from seqs with method and kind, with
+   kind one of 'cycle' | 'path' | 'universal'
    """
    ag = AdjGraph(seqs, method, 0).ag
    dna = eulerianPath(ag, kind) |> concatAdjSeqs
@@ -102,3 +102,15 @@ def pairedComposition(ptn:seq, k:int, d:int) -> Pairs:
    l = len(ptn) -k -d -2
    return [(x, y) for x,y in zip(s[:l], s[k+d:])]
 
+def pairsStrs(pairs:Pairs, sep='|') -> Strs:
+   """ Returns list of "(a1|b1)" representation of input pairs
+   """
+   return [f"({a}{sep}{b})" for a, b in pairs]
+
+def pairsStr(pairs:Pairs, sort=True) -> str:
+   """ Returns sorted(default) "(a1|b1) (a2|b2) ..." representation of input pairs
+   """
+   strs = pairs |> pairsStrs
+   if sort:
+      strs.sort()
+   return strs |> spaceSep
