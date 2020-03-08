@@ -64,54 +64,93 @@ if run(2):
 # 1.2.7 - Reconstruct Genome from scrambled seqs
 if run(3):
    ss =  parseSeqsStr('CTTA ACCA TACC GGCT GCTT TTAC')
-   reconstructGenome(ss, 'kmers') |> testVs(s'GGCTTACCA') # 'overlap' works too
+   genomeFromSeqs(ss, 'path') |> testVs(s'GGCTTACCA')
 
    ss = parseSeqsStr('AAC AAC ACG ACT CGA GAA')
-   reconstructGenome(ss, 'kmers') |> testVs(s'AACGAACT') # 'overlap' works too
+   genomeFromSeqs(ss, 'path') |> testVs(s'AACGAACT')
 
    ss = parseSeqsStr('CTAC CTCC TCCT ACTC CCTC CCTA TACT')
-   reconstructGenome(ss, 'kmers') |> testIn([s'CCTACTCCTC', s'CCTCCTACTC'])
-                       # 'overlap'  bad  ->  TCCTACTCCTCC
+   genomeFromSeqs(ss, 'path') |> testIn([s'CCTACTCCTC', s'CCTCCTACTC'])
 
    ss = parseSeqsStr('CCC CCC CCC TCC CCC CCG CCC CCC CCC')
-   reconstructGenome(ss, 'kmers') |> testVs(s'TCCCCCCCCCG')
+   genomeFromSeqs(ss, 'path') |> testVs(s'TCCCCCCCCCG')
 
    ss = parseSeqsStr('AG AT AA GA GG GT TA TG TT AT')
-   reconstructGenome(ss, 'kmers') |> testVs(s'AAGTTGGATAT') # 'overlap' bad -> 28-mer genome
+   genomeFromSeqs(ss, 'path') |> testIn([s'AAGTTGGATAT', s'AGATAATGGTT'])
 
    l = readlines('dataset_203_7.txt')
-   print reconstructGenome(parseSeqs(l[1:]), 'kmers')
+   print genomeFromSeqs(parseSeqs(l[1:]), 'path')
 
 # 1.2.9 - only 1 k-Universal Circular Path and its reverse, so answer = 2
 
 # 1.2.11 - Find k-Universal Circular String
 if run(4):
    kmers = permsOfLen(3, '01')
-   s = reconstructGenome(kmers, 'kmers', 'universal')
+   s = genomeFromSeqs(kmers, 'universal')
    s |> testVs(s'00101110')
 
    kmers = permsOfLen(4, '01')
-   s = reconstructGenome(kmers, 'kmers', 'universal')
+   s = genomeFromSeqs(kmers, 'universal')
    s |> testVs(s'0010011010111100')
 
    kmers = permsOfLen(9, '01')
-   s = reconstructGenome(kmers, 'kmers', 'universal')
+   s = genomeFromSeqs(kmers, 'universal')
    s |> testVs(s'10100000000010000001010000010010000011000000011010000100010000101010000110010000111000000111010100010010100011000100011010100100010100101010100110000100110010100111000100111011000001011000011011000101011000110011000111001000111011100001011100011011100101011100110011100111100000111100100100101100100110100100111101000101101000111101100101101100110101100111110000111110100101110100110110100111111000101111000111111100101111100110111101010101101010111101110101101110110101110111110110110111111010111111111011110011')
 
 # 1.3 - Assembling Genomes from Read-Pairs
+
 # 1.3.7 - Generate (k, d)-mer Composition of a pattern 
 if run(5):
    ptn = s'TAATGCCATGGGATGTT'
-   pairs = pairedComposition(ptn, 3, 1)
-   pairs |> pairsStr |> testVs('(AAT|CCA) (ATG|CAT) (ATG|GAT) (CAT|GGA) (CCA|GGG) (GCC|TGG) (GGA|GTT) (GGG|TGT) (TAA|GCC) (TGC|ATG) (TGG|ATG)')
+   s = pairedComposition(ptn, 3, 1) |> toPairsStr
+   s |> testVs('(AAT|CCA) (ATG|CAT) (ATG|GAT) (CAT|GGA) (CCA|GGG) (GCC|TGG) (GGA|GTT) (GGG|TGT) (TAA|GCC) (TGC|ATG) (TGG|ATG)')
 
-   pairs = pairedComposition(ptn, 3, 2)
-   pairs |> pairsStr |> testVs('(AAT|CAT) (ATG|ATG) (ATG|ATG) (CAT|GAT) (CCA|GGA) (GCC|GGG) (GGG|GTT) (TAA|CCA) (TGC|TGG) (TGG|TGT)')
+   s = pairedComposition(ptn, 3, 2) |> toPairsStr
+   s |> testVs('(AAT|CAT) (ATG|ATG) (ATG|ATG) (CAT|GAT) (CCA|GGA) (GCC|GGG) (GGG|GTT) (TAA|CCA) (TGC|TGG) (TGG|TGT)')
 
+# 1.3.13 - Reconstruct genome from Read-Pairs
 # if run(6):
-#    'AG|AG AG|TG CA|CT (CT|CA), (CT|CT), (GC|GC), (GC|GC), (GC|GC), and (TG|TG).
-#    kmers = permsOfLen(4, '01')
-#    s = reconstructGenome(kmers, 'kmers', 'pairs')
-#    s |> testVs(s'0010011010111100')
+   # ps = 'AG|AG AG|TG CA|CT CT|CA CT|CT GC|GC GC|GC GC|GC TG|TG'
+   # s = pairsStrToStrPairs(ps, ' ') |> genomeFromPairs(2, 1)
+   # s |> testVs(s'AGCAGCTGCTGCA')
+
+   # ps = 'GAGA|TTGA TCGT|GATG CGTG|ATGT TGGT|TGAG GTGA|TGTT GTGG|GTGA TGAG|GTTG GGTC|GAGA GTCG|AGAT'
+   # s = pairsStrToStrPairs(ps, ' ') |> genomeFromPairs(4, 2)
+   # s |> testVs(s'GTGGTCGTGAGATGTTGA')
+
+   # ps = 'TCA|GCA TTC|TGC AAT|CAT ATT|ATG'
+   # s = pairsStrToStrPairs(ps, ' ') |> genomeFromPairs(3, 1)
+   # s |> testVs(s'AATTCATGCA')
+
+   # ps = 'GG|GA GT|AT TG|TA GA|AC AT|CT'
+   # s = pairsStrToStrPairs(ps, ' ') |> genomeFromPairs(2, 1)
+   # s |> testVs(s'GGTGATACT')
+
+   # ps = 'GTTT|ATTT TTTA|TTTG TTAC|TTGT TACG|TGTA ACGT|GTAT CGTT|TATT'
+   # s = pairsStrToStrPairs(ps, ' ') |> genomeFromPairs(4, 2)
+   # s |> testVs(s'TTTACGTTTGTATTT')
+   #     # result: CGTTTACGTTTGTAT
+
+   # ps = 'GGG|GGG AGG|GGG GGG|GGT GGG|GGG GGG|GGG'
+   # s = pairsStrToStrPairs(ps, ' ') |> genomeFromPairs(3, 2)
+   # s |> testVs(s'AGGGGGGGGGGT')
+
 # if run(7):
+#    l = readlines('dataset_204_16.txt')
+#    i = parseInts(l[0])
+#    s = pairStrsToStrPairs(l[1:], '\n') |> genomeFromPairs(i[0], i[1])
+#    s |> echo
+
 # if run(8):
+#    s = s'TAATGCCATGGGATGTT'
+#    contigs(s, 3)
+   # TAAT, TGTT, TGCCAT, ATG, ATG, ATG, TGG, GGG, GGAT.
+
+if run(9):
+   ps = 'GACC|GCGC ACCG|CGCC CCGA|GCCG CGAG|CCGG GAGC|CGGA'
+   s = pairsStrToStrPairs(ps, ' ') |> genomeFromOrderedPairs(4, 2)
+   s |> testVs(s'GACCGAGCGCCGGA')
+   l = readlines('dataset_6206_4.txt')
+   i = parseInts(l[0])
+   s = pairStrsToStrPairs(l[1:], '\n') |> genomeFromOrderedPairs(i[0], i[1])
+   s |> echo

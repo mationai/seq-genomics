@@ -7,7 +7,7 @@ def concatAdjSeqs(seqs:Seqs) -> seq:
    if len(seqs) == 1:
       return seqs[0]
    if len(seqs) < 1:
-      print 'WARN: Returning empty sequence due to seqs of length 0'
+      print 'WARN: Returning empty seq due to seqs of length 0'
       return s''
    res = seqs[0]
    n = len(res)-1
@@ -15,7 +15,8 @@ def concatAdjSeqs(seqs:Seqs) -> seq:
       if res[i+1:] == dna[:-1]:
          res += dna[-1]
       else:
-         raise ValueError('concatAdjSeqs() not possible due to seqs not continuous')
+         print 'WARN: Returning empty seq due to seqs not continuous'
+         return s''
    return res
 
 class AdjGraph:

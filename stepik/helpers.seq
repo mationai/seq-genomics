@@ -35,16 +35,16 @@ def testVs[T](a:T, b:T):
 
 # Much simpler logic if can map(type, list)
 
-def parseInts(s:str, sep=' ') -> list[int]:
+def parseInts(s:str, sep=' ') -> Ints:
    return [int(x) for x in s.split(sep) if x.strip()]
 
-def parseFloats(s:str, sep=' ') -> list[float]:
+def parseFloats(s:str, sep=' ') -> Floats:
    return [float(x) for x in s.split(sep) if x.strip()]
 
-def parseSeqsStr(s:str, sep=' ') -> list[seq]:
+def parseSeqsStr(s:str, sep=' ') -> Seqs:
    return [seq(x) for x in s.split(sep) if x.strip()]
 
-def parseSeqs(s:list[str], sep=' ') -> list[seq]:
+def parseSeqs(s:list[str], sep=' ') -> Seqs:
    return [seq(x) for x in s if x.strip()]
 
 def parseProfile(d) -> Profile:
@@ -56,6 +56,33 @@ def parseGraphStr(st:str, sep='\n', arrow=' -> ') -> Adjacency:
       x, y = s.split(arrow)
       res[seq(x)] = [seq(z) for z in y.split(',')] if ',' in y else [seq(y)]
    return res
+
+def pairsStrToStrPairs(st:str, sep='\n', pairSep='|') -> StrPairs:
+   res = StrPairs()
+   for s in st.split(sep):
+      a, b = s.split(pairSep)
+      res.append((a, b))
+   return res
+
+def pairStrsToStrPairs(strs:Strs, sep='\n', pairSep='|') -> StrPairs:
+   res = StrPairs()
+   for s in strs:
+      a, b = s.split(pairSep)
+      res.append((a, b))
+   return res
+
+def toPairsStrs(pairs:Pairs, sep='|') -> Strs:
+   """ Returns list of "(a1|b1)" representation of input pairs
+   """
+   return [f"({a}{sep}{b})" for a, b in pairs]
+
+def toPairsStr(pairs:Pairs, sort=True) -> str:
+   """ Returns sorted(default) "(a1|b1) (a2|b2) ..." representation of input pairs
+   """
+   strs = pairs |> toPairsStrs
+   if sort:
+      strs.sort()
+   return strs |> spaceSep
 
 def adjGraphStr(ag:Adjacency) -> str:
    res = [f"{x} -> {','.join([str(y) for y in ag[x]])}" for x in ag]

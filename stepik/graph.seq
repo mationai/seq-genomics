@@ -2,7 +2,7 @@ from extensions import *
 from adjGraph import *
 from helpers import *
 
-def eulerianPath(ag:Adjacency, kind='cycle') -> Seqs:
+def eulerianPath(ag:Adjacency, kind='cycle', start=s'') -> Seqs:
    """ See http://www.graph-magics.com/articles/euler.php
    """
    stack = Seqs()
@@ -25,21 +25,29 @@ def eulerianPath(ag:Adjacency, kind='cycle') -> Seqs:
    inGTOutKeys = [k for k in notEqIOKeys if inCnt[k] > outCnt[k]]
    outGTInKeys = [k for k in notEqIOKeys if outCnt[k] > inCnt[k]]
    maxResLen = sum(len(vals) for key, vals in ag.items()) + 1
+   # print '=iocnts', eqIOCnts
+   # print 'not=ioKeys', notEqIOKeys
+   # print 'verts', nVertices
 
    if len(keys) == 0:
       return res
    elif len(keys) == 1:
       cur = keys[0]
+   elif len(start) > 0:
+      cur = start
 
    # 1. Choose starting vertex
-   # If all vertices have same fanout as fanin - choose one with > 1 fanin or fanout
+   # If all vertices have same fanout as fanin
    elif eqIOCnts == nVertices:
+      # choose one with more than 1 fanout
       for i, key in enumerate(keys):
          if len(ag[key]) > 1:
             cur = key
             break
+      # or one with more than 1 fanin if exists, else choose any, eg. 1st one
       if cur == s'':
-         cur = keys[0]
+         cur = inGTOutKeys[0] if len(inGTOutKeys) > 0 else keys[0]
+         print 'here, cur=AT', cur
 
    # If all but 2 vertices have same out-degree as in-degree
    elif eqIOCnts == nVertices - 2:
@@ -52,11 +60,12 @@ def eulerianPath(ag:Adjacency, kind='cycle') -> Seqs:
             cur = outGTkey
 
    # Else no euler cycle exists if cur isn't set
+   # print 'start|cur', start,'|', cur, start==cur
    if kind=='cycle' and cur == s'':
       return res
 
    # Path finding, set cur to key that has fanout > fanin
-   if kind != 'cycle':
+   if cur == s'' and kind != 'cycle':
       cur = outGTInKeys[0] if len(outGTInKeys) > 0 else keys[0]
 
    # 2. Repeat until current vertex has no more out-going edges and stack is empty:
@@ -81,12 +90,18 @@ def eulerianPath(ag:Adjacency, kind='cycle') -> Seqs:
    res.reverse()
    return res
 
-def reconstructGenome(seqs:Seqs, method='kmers', kind='cycle') -> seq: 
+def genomeFromSeqs(seqs:Seqs, kind='path', start=s'') -> seq: 
+# def genomeFromSeqs(seqs:Seqs, method='kmers', kind='path') -> seq: 
    """ Reconstruct genome from seqs with method and kind, with
    kind one of 'cycle' | 'path' | 'universal'
    """
-   ag = AdjGraph(seqs, method, 0).ag
-   dna = eulerianPath(ag, kind) |> concatAdjSeqs
+   ag = AdjGraph(seqs, 'kmers', 0).ag # 'overlap' only works for very few cases
+   # print 'ag', ag
+   path = eulerianPath(ag, kind, start)
+   # print 'path', path
+   dna = path |> concatAdjSeqs
+   # print 'dna', dna
+   # dna = eulerianPath(ag, kind) |> concatAdjSeqs
    if kind != 'universal':
       return dna 
    k = len(seqs[0]) - 1
@@ -95,6 +110,13 @@ def reconstructGenome(seqs:Seqs, method='kmers', kind='cycle') -> seq:
    res = dna[i:-i]
    return res[1:] if isOdd else res
 
+def unzipToSeqs(strPairs:StrPairs): 
+   """ a, b = zip(*sps) (doesn't work in seq)
+   """
+   A = [seq(sp[0]) for sp in strPairs]
+   B = [seq(sp[1]) for sp in strPairs]
+   return A, B
+
 def pairedComposition(ptn:seq, k:int, d:int) -> Pairs:
    """ Returns pairs of ptn formed by its (k, d)-mer
    """
@@ -102,15 +124,27 @@ def pairedComposition(ptn:seq, k:int, d:int) -> Pairs:
    l = len(ptn) -k -d -2
    return [(x, y) for x,y in zip(s[:l], s[k+d:])]
 
-def pairsStrs(pairs:Pairs, sep='|') -> Strs:
-   """ Returns list of "(a1|b1)" representation of input pairs
+def unzip(strPairs:StrPairs) -> tuple[Strs, Strs]: 
+   """ a, b = zip(*sps) (doesn't work in seq)
    """
-   return [f"({a}{sep}{b})" for a, b in pairs]
+   A = [sp[0] for sp in strPairs]
+   B = [sp[1] for sp in strPairs]
+   return A, B
 
-def pairsStr(pairs:Pairs, sort=True) -> str:
-   """ Returns sorted(default) "(a1|b1) (a2|b2) ..." representation of input pairs
+def unzipToSeqs(strPairs:StrPairs) -> tuple[Seqs, Seqs]: 
+   """ a, b = zip(*sps) (doesn't work in seq)
    """
-   strs = pairs |> pairsStrs
-   if sort:
-      strs.sort()
-   return strs |> spaceSep
+   A = [seq(sp[0]) for sp in strPairs]
+   B = [seq(sp[1]) for sp in strPairs]
+   return A, B
+
+
+def genomeFromOrderedPairs(strPairs:StrPairs, k:int, d:int) -> seq:
+   pair0 = strPairs[0]
+   A, B = unzip(strPairs) 
+   ptns1 = pair0[0] + ''.join([a[-1] for a in A[1:]])
+   ptns2 = pair0[1] + ''.join([b[-1] for b in B[1:]])
+   l = len(ptns1)
+   if ptns1[k+d:] != ptns2[:l-k-d]:
+      print 'WARN: No string spelled by the gapped patterns'
+   return seq(ptns1 + ptns2[-(k+d):])

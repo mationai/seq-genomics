@@ -1,11 +1,15 @@
+type Ints = list[int]
 type Seqs = list[seq]
 type Strs = list[str]
+type Floats = list[float]
 type GraphDict = dict[str, seq]
 type Profile = dict[seq, list[float]]
 type SeqFloatDict = dict[seq, float]
 type SeqIntDict = dict[seq, int]
 type Adjacency = dict[seq, Seqs]
 type Pairs = list[tuple[seq, seq]]
+type StrPair = tuple[str, str]
+type StrPairs = list[StrPair]
 
 extend seq:
    def __add__(s1:seq, s2:seq):
