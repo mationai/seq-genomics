@@ -2,20 +2,26 @@ from extensions import *
 from adjGraph import *
 from helpers import *
 
-def eulerianPath(ag:Adjacency, kind='cycle', start=s'') -> Seqs:
+# def eulerianPath(sg:strGraph, kind:str) -> Strs:
+def eulerianPath(sg:strGraph, kind:str, start:str) -> Strs:
    """ See http://www.graph-magics.com/articles/euler.php
+   kind one of:
+   'cycle'
+   'path'
+   'universal'
    """
-   stack = Seqs()
-   res = Seqs()
-   keys = list(ag.keys())
+   # print sg
+   stack = Strs()
+   res = Strs()
+   keys = list(sg.keys())
    nVertices = len(keys)
-   paths = {key: vals for key, vals in ag.items()}
+   paths = {key: vals[:] for key, vals in sg.items()}
    inCnt = {key: 0 for key in keys}
    outCnt = {key: 0 for key in keys}
-   cur = s''
+   cur = ''
 
    # Set in/out counts map
-   for key, vals in ag.items():
+   for key, vals in sg.items():
       outCnt[key] += len(vals)
       for val in vals:
          inCnt[val] = 1 if val not in inCnt else inCnt[val] + 1
@@ -24,16 +30,13 @@ def eulerianPath(ag:Adjacency, kind='cycle', start=s'') -> Seqs:
    notEqIOKeys = [k for k in keys if inCnt[k] != outCnt[k]]
    inGTOutKeys = [k for k in notEqIOKeys if inCnt[k] > outCnt[k]]
    outGTInKeys = [k for k in notEqIOKeys if outCnt[k] > inCnt[k]]
-   maxResLen = sum(len(vals) for key, vals in ag.items()) + 1
-   # print '=iocnts', eqIOCnts
-   # print 'not=ioKeys', notEqIOKeys
-   # print 'verts', nVertices
+   maxResLen = sum(len(vals) for key, vals in sg.items()) + 1
 
    if len(keys) == 0:
       return res
    elif len(keys) == 1:
       cur = keys[0]
-   elif len(start) > 0:
+   elif start != '':
       cur = start
 
    # 1. Choose starting vertex
@@ -41,13 +44,12 @@ def eulerianPath(ag:Adjacency, kind='cycle', start=s'') -> Seqs:
    elif eqIOCnts == nVertices:
       # choose one with more than 1 fanout
       for i, key in enumerate(keys):
-         if len(ag[key]) > 1:
+         if len(sg[key]) > 1:
             cur = key
             break
       # or one with more than 1 fanin if exists, else choose any, eg. 1st one
-      if cur == s'':
+      if cur == '':
          cur = inGTOutKeys[0] if len(inGTOutKeys) > 0 else keys[0]
-         print 'here, cur=AT', cur
 
    # If all but 2 vertices have same out-degree as in-degree
    elif eqIOCnts == nVertices - 2:
@@ -60,17 +62,17 @@ def eulerianPath(ag:Adjacency, kind='cycle', start=s'') -> Seqs:
             cur = outGTkey
 
    # Else no euler cycle exists if cur isn't set
-   # print 'start|cur', start,'|', cur, start==cur
-   if kind=='cycle' and cur == s'':
+   if kind=='cycle' and cur == '':
       return res
 
    # Path finding, set cur to key that has fanout > fanin
-   if cur == s'' and kind != 'cycle':
+   if cur == '' and kind != 'cycle':
       cur = outGTInKeys[0] if len(outGTInKeys) > 0 else keys[0]
 
    # 2. Repeat until current vertex has no more out-going edges and stack is empty:
-   while len(res) < maxResLen and cur != s'':
-      nexts = Seqs() if kind != 'cycle' and cur not in paths else paths[cur]
+   while len(res) < maxResLen and cur != '':
+      nexts = Strs() if kind != 'cycle' and cur not in paths else paths[cur]
+      # nexts = Seqs() if kind != 'cycle' and cur not in paths else paths[cur]
 
       # If current vertex has no out-edges, add it to cycle and
       # remove the last vertex from the stack and set it as the current one
@@ -81,27 +83,41 @@ def eulerianPath(ag:Adjacency, kind='cycle', start=s'') -> Seqs:
       # remove that out-edge and set that out-vertex as the current vertex
       else:
          res.append(cur)
-         cur = stack.pop() if len(stack) > 0 else s''
+         cur = stack.pop() if len(stack) > 0 else ''
 
-   if cur != s'':
+   if cur != '':
       res.append(cur)
    while len(stack) > 0:
       res.append(stack.pop())
    res.reverse()
    return res
 
-def genomeFromSeqs(seqs:Seqs, kind='path', start=s'') -> seq: 
-# def genomeFromSeqs(seqs:Seqs, method='kmers', kind='path') -> seq: 
-   """ Reconstruct genome from seqs with method and kind, with
-   kind one of 'cycle' | 'path' | 'universal'
+def mergeOrderedSeqs[T](seqs:list[T]) -> T:
+   """ Concat adjacent seqs. Eg. abc, bcd -> abcd
    """
-   ag = AdjGraph(seqs, 'kmers', 0).ag # 'overlap' only works for very few cases
-   # print 'ag', ag
-   path = eulerianPath(ag, kind, start)
+   if len(seqs) == 1:
+      return seqs[0]
+   if len(seqs) < 1:
+      print 'WARN: mergeOrderedSeqs -> '' due to empty input seqs'
+      return T()
+   res = seqs[0]
+   n = len(res)-1
+   for i, dna in enumerate(seqs[1:]): 
+      if res[i+1:] == dna[:-1]:
+         res += dna[-1]
+      else:
+         print 'WARN: mergeOrderedSeqs -> '' due to non-continuous input of', seqs
+         return T()
+   return res
+
+def genomeFromSeqs(seqs:Seqs, kind:str, start:str) -> str: 
+   """ Reconstruct genome from seqs with method and kind (see eulerianPath())
+   """
+   sg = AdjGraph(seqs, 'kmers', 0).sg
+   # print 'sg', sg
+   path = eulerianPath(sg, kind, start)
    # print 'path', path
-   dna = path |> concatAdjSeqs
-   # print 'dna', dna
-   # dna = eulerianPath(ag, kind) |> concatAdjSeqs
+   dna = path |> mergeOrderedSeqs
    if kind != 'universal':
       return dna 
    k = len(seqs[0]) - 1
@@ -109,13 +125,6 @@ def genomeFromSeqs(seqs:Seqs, kind='path', start=s'') -> seq:
    isOdd = k % 2 == 1 
    res = dna[i:-i]
    return res[1:] if isOdd else res
-
-def unzipToSeqs(strPairs:StrPairs): 
-   """ a, b = zip(*sps) (doesn't work in seq)
-   """
-   A = [seq(sp[0]) for sp in strPairs]
-   B = [seq(sp[1]) for sp in strPairs]
-   return A, B
 
 def pairedComposition(ptn:seq, k:int, d:int) -> Pairs:
    """ Returns pairs of ptn formed by its (k, d)-mer
@@ -138,8 +147,90 @@ def unzipToSeqs(strPairs:StrPairs) -> tuple[Seqs, Seqs]:
    B = [seq(sp[1]) for sp in strPairs]
    return A, B
 
+def pathEdgesFromNodes[T](S:list[T]) -> list[T]:
+   """ Eg. [a, b, c] -> [ab, bc]
+   """
+   if len(S) < 2:
+      return S
+   return [s+S[i+1] for i, s in enumerate(S[:-1])]
+
+def isTunnelNode(src:str, sg:strGraph) -> bool:
+   """ Return if src in sg has only 1 other node pointing to it
+   and if ag[src] has only 1 node
+   Q: Still a tunnel of another node points to src and other nodes?
+   """
+   if src not in sg or len(sg[src]) != 1:
+      return False
+   cnt = 0
+   for vals in sg.values():
+      cnt += sum([1 for v in vals if v == src])
+   return cnt == 1
+
+def maxNonBranchingPaths(sg:strGraph) -> list[Strs]:
+   """ Returns non-branching paths in sg
+   """
+   res = list[Strs]()
+   processed = StrsSet()
+   for src, vals in sg.items():
+      if not isTunnelNode(src, sg):
+         for val in vals:
+            path = [src, val]
+            v = val
+            isTunnel = isTunnelNode(v, sg)
+            while isTunnel:
+               v = sg[v][0] if len(sg[v]) > 0 else ''
+               if v != '':
+                  path.append(v)
+                  processed.add(v)
+               isTunnel = isTunnelNode(v, sg)
+            res.append(path)
+            processed.add(val)
+         processed.add(src)
+   for src, vals in sg.items():
+      if not src in processed:
+         path = [src]
+         v = vals[0] if len(vals) > 0 else ''
+         while v != '' and v != src:
+            path.append(v)
+            processed.add(v)
+            v = sg[v][0] if len(sg[v]) > 0 else ''
+         if v == src:
+            path.append(src)
+         res.append(path)
+         processed.add(src)
+   return res
+
+def contigsFromSeq(ptn:seq, k:int) -> Strs:
+   """ Generate Contig - long, segments of non-branching genome from a seq 
+   Eg. (see L2-2 1.4.4), k=3 (kmer or edge len)
+   ptn = TAATGCCATGGGATGTT
+   ->
+   [TAAT TGTT TGCCAT ATG ATG ATG TGG GGG GGAT]
+   """
+   kmers = list(ptn.split(k, 1))
+   sg = AdjGraph(kmers, 'kmers', 0).sg
+   path = eulerianPath(sg, 'path', '')
+   stack = Strs()
+   res = Strs()
+
+   for p in path:
+      if p in sg and len(sg[p]) == 1:
+         stack.append(p)
+      else:
+         res.append(mergeOrderedSeqs(stack + [p]))
+         stack = [p]
+   return res
+
+def contigs(kmers:Seqs) -> Strs:
+   """ Generate Contig - long, segments of non-branching genome from kmers
+   """
+   sg = AdjGraph(kmers, 'kmers', 0).sg
+   paths = maxNonBranchingPaths(sg)
+   return [mergeOrderedSeqs(p) for p in paths]
 
 def genomeFromOrderedPairs(strPairs:StrPairs, k:int, d:int) -> seq:
+   """ Construct genome from ordered pairs, aka "string spelled by gapped patterns"
+   """
    pair0 = strPairs[0]
    A, B = unzip(strPairs) 
    ptns1 = pair0[0] + ''.join([a[-1] for a in A[1:]])
@@ -148,3 +239,38 @@ def genomeFromOrderedPairs(strPairs:StrPairs, k:int, d:int) -> seq:
    if ptns1[k+d:] != ptns2[:l-k-d]:
       print 'WARN: No string spelled by the gapped patterns'
    return seq(ptns1 + ptns2[-(k+d):])
+
+def genomeFromPairs(strPairs:StrPairs, k:int, d:int) -> str:
+   """ Construct genome from ordered pairs, aka "string spelled by gapped patterns"
+   """
+   A, B = unzipToSeqs(strPairs)
+   # aPath = eulerianPath(aGraph, 'path') |> pathEdgesFromNodes
+   # bPath = eulerianPath(bGraph, 'path') |> pathEdgesFromNodes
+   a = genomeFromSeqs(A, 'path', '')
+   target = a[k+d:]
+   bStart = target[:k-1]
+   b = genomeFromSeqs(B, 'path', bStart)
+
+   # print 'tar, start', target, bStart
+   # print 'A', A
+   # print 'B', B
+   # print 'a', a
+   # print 'b', b
+   # aGraph = AdjGraph(A, 'kmers', 0).sg
+   # bGraph = AdjGraph(B, 'kmers', 0).sg
+   # # print 'a contigsFromSeq', contigsFromSeq(seq(a), k)
+   # # print 'b contigsFromSeq', contigsFromSeq(seq(b), k)
+   # c2 = contigs(A) 
+   # d2 = contigs(B) 
+   # print 'aGrpah', aGraph |> maxNonBranchingPaths |> pathsArrowStr |> echo
+   # print 'bGrpah', bGraph |> maxNonBranchingPaths |> pathsArrowStr |> echo
+   # print 'a contigs', c2
+   # print 'b contigs', d2
+   # print target, 'vs'
+
+   for i in range(len(a)):
+      b_ = b[i:]+b[:i]
+      # print b_
+      if target == b_[:-k-d]:
+         return a + b_[-k-d:]
+   return a + b[-k-d:]

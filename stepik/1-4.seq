@@ -10,7 +10,7 @@ if run(1):
 if run(2):
    l = readlines('dataset_161_5.txt')
    [k, _] = parseInts(l[0])
-   res = iterRandMotifSearch(parseSeqs(l[1:]), k)
+   res = iterRandMotifSearch(parseSeqStrs(l[1:]), k)
    print res |> nlSep
    res |> testVs(parseSeqsStr('TCTAAATCTGGGGTT ACTGCGTTCGAGCTT ACTATATCATAGCTT ACTACCCTCGAGCTT ACTGCTTTCGAGCTT ACTATATTCGAGAAC CCTATATTCGAGCGC ACTATTGACGAGCTT AACGTATTCGAGCTT CATATATTCGAGCTG ACTATATTCCGCCTT ACTATATTCGACAGT ACTATACATGAGCTT ACTATATTAAGGCTT ACTATCCCCGAGCTT ACTATAGAAGAGCTT ACTACCATCGAGCTT CGAATATTCGAGCTT ACTATATTCGTAGTT ACGTGATTCGAGCTT'))
 
@@ -34,4 +34,4 @@ if run(4):
 if run(5):
    l = readlines('dataset_163_4.txt')
    [k, _, iters] = parseInts(l[0])
-   print gibbsSampler(parseSeqs(l[1:]), k) |> nlSep # gibbsSampler(k) can't be on RHS of |> due to default vals  
+   print gibbsSampler(parseSeqStrs(l[1:]), k) |> nlSep # gibbsSampler(k) can't be on RHS of |> due to default vals  

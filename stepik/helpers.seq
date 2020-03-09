@@ -32,6 +32,19 @@ def testVs[T](a:T, b:T):
       print "  result:", a
       print "expected:", b
 
+def testColl[T](A:list[T], B:list[T]):
+   matchedX = set[int]()
+   matchedY = set[int]()
+   for x, a in enumerate(A): 
+      for y, b in enumerate(B): 
+         if a == b and x not in matchedX and y not in matchedY:
+            matchedX.add(x)
+            matchedY.add(y)
+   if len(matchedX)==len(A) and len(matchedY)==len(B):
+      print "✓ result as expected"
+   else:
+      print "  result:", A
+      print "expected:", B
 
 # Much simpler logic if can map(type, list)
 
@@ -41,20 +54,23 @@ def parseInts(s:str, sep=' ') -> Ints:
 def parseFloats(s:str, sep=' ') -> Floats:
    return [float(x) for x in s.split(sep) if x.strip()]
 
+def parseStrsStr(s:str, sep=' ') -> Strs:
+   return [x for x in s.split(sep) if x.strip()]
+
 def parseSeqsStr(s:str, sep=' ') -> Seqs:
    return [seq(x) for x in s.split(sep) if x.strip()]
 
-def parseSeqs(s:list[str], sep=' ') -> Seqs:
-   return [seq(x) for x in s if x.strip()]
+def parseSeqStrs(S:Strs, sep=' ') -> Seqs:
+   return [seq(x) for x in S if x.strip()]
 
 def parseProfile(d) -> Profile:
    return {seq(key): parseFloats(d[i]) for i, key in enumerate('ACGT')}
 
-def parseGraphStr(st:str, sep='\n', arrow=' -> ') -> Adjacency:
-   res = Adjacency()
+def parseGraphStr(st:str, sep='\n', arrow=' -> ') -> strGraph:
+   res = strGraph()
    for s in [s.strip() for s in st.split(sep)]:
       x, y = s.split(arrow)
-      res[seq(x)] = [seq(z) for z in y.split(',')] if ',' in y else [seq(y)]
+      res[x] = y.split(',') if ',' in y else [y]
    return res
 
 def pairsStrToStrPairs(st:str, sep='\n', pairSep='|') -> StrPairs:
@@ -84,12 +100,21 @@ def toPairsStr(pairs:Pairs, sort=True) -> str:
       strs.sort()
    return strs |> spaceSep
 
-def adjGraphStr(ag:Adjacency) -> str:
-   res = [f"{x} -> {','.join([str(y) for y in ag[x]])}" for x in ag]
+def adjGraphStr(sg:strGraph) -> str:
+   res = [f"{x} -> {','.join(sg[x])}" for x in sg]
    return '\n'.join(res)
 
-def arrowPathStr(seqs:Seqs) -> str:
-   return '->'.join([str(s) for s in seqs])
+def pathArrowStr[T](S:list[T]) -> str:
+   return ' -> '.join([str(s) for s in S])
+
+def pathsArrowStr[T](SS:list[list[T]]) -> str:
+   res = Strs()
+   for S in SS:
+      res.append(' -> '.join([str(s) for s in S]))
+   return '\n'.join(res)
+
+def rmSpaces(s:str) -> str:
+   return s.replace(' ', '')
 
 def dPath(p:str):
    return 'stepik/data/'+p
@@ -104,7 +129,7 @@ def readlines(p:str) -> list[str]:
 def readseqs(p:str) -> list[seq]:
    return list(seqs(dPath(p)))
 
-def readGraphStr(p:str) -> Adjacency:
+def readGraphStr(p:str) -> strGraph:
    s = '\n'.join(open(dPath(p), 'r').readlines())
    return parseGraphStr(s)
 

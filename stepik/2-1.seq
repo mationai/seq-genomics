@@ -2,6 +2,8 @@ from extensions import *
 from helpers import *
 from adjGraph import *
 
+# Lesson 2 - Week 1
+
 # 1.2.3 Get all k-mers in seq (including repeats)
 if run(1):
    print list(s'CAATCCAAC'.split(5, 1)) |> nlSep
@@ -12,9 +14,9 @@ if run(2):
 # 1.3.3 Genome Path Problem
 if run(3):
    s = parseSeqsStr('ACCGA CCGAA CGAAG GAAGC AAGCT')
-   concatAdjSeqs(s) |> testVs(s'ACCGAAGCT')
+   mergeOrderedSeqs(s) |> testVs(s'ACCGAAGCT')
 if run(4):
-   print readseqs('dataset_198_3.txt') |> concatAdjSeqs
+   print readseqs('dataset_198_3.txt') |> mergeOrderedSeqs
 
 # 1.3.10
 if run(5):

@@ -41,7 +41,7 @@ if run(5):
    seqs = parseSeqsStr('ATA ACA AGA AAT AAC')
    print medianKmer(seqs, 3) == s'AAA'
    l = readlines('dataset_158_9.txt')
-   print medianKmer(parseSeqs(l[1:]), int(l[0]))
+   print medianKmer(parseSeqStrs(l[1:]), int(l[0]))
 
 # 1.5.2
 if run(6):
@@ -71,7 +71,7 @@ if run(8):
    print greedyMotifSearch(dna, 3, 0)
    l = readlines('dataset_159_5.txt')
    [k, _] = parseInts(l[0])
-   greedyMotifSearch(parseSeqs(l[1:]), k, 0) |> nlSep |> echo 
+   greedyMotifSearch(parseSeqStrs(l[1:]), k, 0) |> nlSep |> echo 
 
 # 1.6.9
 if run(9):
@@ -79,4 +79,4 @@ if run(9):
    print greedyMotifSearch(dna, 3)
    l = readlines('dataset_160_9.txt')
    [k, _] = parseInts(l[0])
-   greedyMotifSearch(parseSeqs(l[1:]), k) |> nlSep |> echo
+   greedyMotifSearch(parseSeqStrs(l[1:]), k) |> nlSep |> echo

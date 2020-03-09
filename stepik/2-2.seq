@@ -4,6 +4,8 @@ from adjGraph import *
 from graph import *
 from seqlib import permsOfLen
 
+# Lesson 2 - Week 2
+
 # 1.2.2 - Find Eulerian Cycle
 if run(1):
    s = '''0 -> 3
@@ -16,12 +18,12 @@ if run(1):
    7 -> 9
    8 -> 7
    9 -> 6'''
-   ss = eulerianPath(parseGraphStr(s), 'cycle')
-   ss |> arrowPathStr |> testVs('2->1->0->3->2->6->8->7->9->6->5->4->2')
+   S = eulerianPath(parseGraphStr(s), 'cycle', '')
+   S |> pathArrowStr |> rmSpaces |> testVs('2->1->0->3->2->6->8->7->9->6->5->4->2')
 
    s = '1 -> 2|2 -> 1,2|0 -> 1'
-   ss = eulerianPath(parseGraphStr(s, '|'), 'cycle')
-   ss |> arrowPathStr |> testVs('')
+   S = eulerianPath(parseGraphStr(s, '|'), 'cycle', '')
+   S |> pathArrowStr |> rmSpaces |> testVs('')
 
    s = '''1 -> 10
    10 -> 2,3,4
@@ -29,23 +31,23 @@ if run(1):
    3 -> 10
    4 -> 5
    5 -> 10'''
-   ss = eulerianPath(parseGraphStr(s), 'cycle')
-   ss |> arrowPathStr |> testVs('10->2->1->10->3->10->4->5->10')
+   S = eulerianPath(parseGraphStr(s), 'cycle', '')
+   S |> pathArrowStr |> rmSpaces |> testVs('10->2->1->10->3->10->4->5->10')
 
    s = '''0 -> 1,2,3,4
    1 -> 0,2,3,4
    2 -> 0,1,3,4
    3 -> 0,1,2,4
    4 -> 0,1,2,3'''
-   ss = eulerianPath(parseGraphStr(s), 'cycle')
-   ss |> arrowPathStr |> testVs('0->1->0->2->0->3->0->4->1->2->1->3->1->4->2->3->2->4->3->4->0')
+   S = eulerianPath(parseGraphStr(s), 'cycle', '')
+   S |> pathArrowStr |> rmSpaces |> testVs('0->1->0->2->0->3->0->4->1->2->1->3->1->4->2->3->2->4->3->4->0')
 
    s = '0 -> 3,1|1 -> 2|2 -> 0|3 -> 0'
-   ss = eulerianPath(parseGraphStr(s, '|'), 'cycle')
-   ss |> arrowPathStr |> testVs('0->3->0->1->2->0')
+   S = eulerianPath(parseGraphStr(s, '|'), 'cycle', '')
+   S |> pathArrowStr |> rmSpaces |> testVs('0->3->0->1->2->0')
 
-   ag = readGraphStr('dataset_203_2.txt')
-   print eulerianPath(ag, 'cycle') |> arrowPathStr
+   sg = readGraphStr('dataset_203_2.txt') 
+   sg |> eulerianPath('cycle', '') |> pathArrowStr |> rmSpaces |> echo
 
 # 1.2.6 - Find Eulerian Path
 if run(2):
@@ -57,45 +59,45 @@ if run(2):
    7 -> 8
    8 -> 9
    9 -> 6'''
-   eulerianPath(parseGraphStr(s), 'path') |> arrowPathStr |> testVs('6->7->8->9->6->3->0->2->1->3->4')
-   ag = readGraphStr('dataset_203_6.txt')
-   print eulerianPath(ag, 'path') |> arrowPathStr
+   S = eulerianPath(parseGraphStr(s), 'path', '')
+   S |> pathArrowStr |> rmSpaces |> testVs('6->7->8->9->6->3->0->2->1->3->4')
+
+   sg = readGraphStr('dataset_203_6.txt')
+   sg |> eulerianPath('path', '') |> pathArrowStr |> rmSpaces |> echo
 
 # 1.2.7 - Reconstruct Genome from scrambled seqs
 if run(3):
-   ss =  parseSeqsStr('CTTA ACCA TACC GGCT GCTT TTAC')
-   genomeFromSeqs(ss, 'path') |> testVs(s'GGCTTACCA')
+   S =  parseSeqsStr('CTTA ACCA TACC GGCT GCTT TTAC')
+   genomeFromSeqs(S, 'path', '') |> testVs('GGCTTACCA')
 
-   ss = parseSeqsStr('AAC AAC ACG ACT CGA GAA')
-   genomeFromSeqs(ss, 'path') |> testVs(s'AACGAACT')
+   S = parseSeqsStr('AAC AAC ACG ACT CGA GAA')
+   genomeFromSeqs(S, 'path', '') |> testVs('AACGAACT')
 
-   ss = parseSeqsStr('CTAC CTCC TCCT ACTC CCTC CCTA TACT')
-   genomeFromSeqs(ss, 'path') |> testIn([s'CCTACTCCTC', s'CCTCCTACTC'])
+   S = parseSeqsStr('CTAC CTCC TCCT ACTC CCTC CCTA TACT')
+   genomeFromSeqs(S, 'path', '') |> testIn(['CCTACTCCTC', 'CCTCCTACTC'])
 
-   ss = parseSeqsStr('CCC CCC CCC TCC CCC CCG CCC CCC CCC')
-   genomeFromSeqs(ss, 'path') |> testVs(s'TCCCCCCCCCG')
+   S = parseSeqsStr('CCC CCC CCC TCC CCC CCG CCC CCC CCC')
+   genomeFromSeqs(S, 'path', '') |> testVs('TCCCCCCCCCG')
 
-   ss = parseSeqsStr('AG AT AA GA GG GT TA TG TT AT')
-   genomeFromSeqs(ss, 'path') |> testIn([s'AAGTTGGATAT', s'AGATAATGGTT'])
+   S = parseSeqsStr('AG AT AA GA GG GT TA TG TT AT')
+   genomeFromSeqs(S, 'path', '') |> testIn(['AAGTTGGATAT', 'AGATAATGGTT'])
 
    l = readlines('dataset_203_7.txt')
-   print genomeFromSeqs(parseSeqs(l[1:]), 'path')
+   parseSeqStrs(l[1:]) |> genomeFromSeqs('path', '') |> echo
 
 # 1.2.9 - only 1 k-Universal Circular Path and its reverse, so answer = 2
 
 # 1.2.11 - Find k-Universal Circular String
 if run(4):
-   kmers = permsOfLen(3, '01')
-   s = genomeFromSeqs(kmers, 'universal')
-   s |> testVs(s'00101110')
+   S = permsOfLen(3, '01')
+   S |> genomeFromSeqs('universal', '') |> testVs('00101110')
 
-   kmers = permsOfLen(4, '01')
-   s = genomeFromSeqs(kmers, 'universal')
-   s |> testVs(s'0010011010111100')
+   S = permsOfLen(4, '01')
+   S |> genomeFromSeqs('universal', '') |> testVs('0010011010111100')
 
-   kmers = permsOfLen(9, '01')
-   s = genomeFromSeqs(kmers, 'universal')
-   s |> testVs(s'10100000000010000001010000010010000011000000011010000100010000101010000110010000111000000111010100010010100011000100011010100100010100101010100110000100110010100111000100111011000001011000011011000101011000110011000111001000111011100001011100011011100101011100110011100111100000111100100100101100100110100100111101000101101000111101100101101100110101100111110000111110100101110100110110100111111000101111000111111100101111100110111101010101101010111101110101101110110101110111110110110111111010111111111011110011')
+   S = permsOfLen(9, '01')
+   S |> genomeFromSeqs('universal', '') |> testVs('10100000000010000001010000010010000011000000011010000100010000101010000110010000111000000111010100010010100011000100011010100100010100101010100110000100110010100111000100111011000001011000011011000101011000110011000111001000111011100001011100011011100101011100110011100111100000111100100100101100100110100100111101000101101000111101100101101100110101100111110000111110100101110100110110100111111000101111000111111100101111100110111101010101101010111101110101101110110101110111110110110111111010111111111011110011')
+
 
 # 1.3 - Assembling Genomes from Read-Pairs
 
@@ -108,32 +110,23 @@ if run(5):
    s = pairedComposition(ptn, 3, 2) |> toPairsStr
    s |> testVs('(AAT|CAT) (ATG|ATG) (ATG|ATG) (CAT|GAT) (CCA|GGA) (GCC|GGG) (GGG|GTT) (TAA|CCA) (TGC|TGG) (TGG|TGT)')
 
-# 1.3.13 - Reconstruct genome from Read-Pairs
-# if run(6):
-   # ps = 'AG|AG AG|TG CA|CT CT|CA CT|CT GC|GC GC|GC GC|GC TG|TG'
-   # s = pairsStrToStrPairs(ps, ' ') |> genomeFromPairs(2, 1)
-   # s |> testVs(s'AGCAGCTGCTGCA')
+# 1.3.16 - Reconstruct genome from Pairs
+if run(6):
+   sp = pairsStrToStrPairs('GAGA|TTGA TCGT|GATG CGTG|ATGT TGGT|TGAG GTGA|TGTT GTGG|GTGA TGAG|GTTG GGTC|GAGA GTCG|AGAT', ' ')
+   sp |> genomeFromPairs(4, 2) |> testVs('GTGGTCGTGAGATGTTGA')
 
-   # ps = 'GAGA|TTGA TCGT|GATG CGTG|ATGT TGGT|TGAG GTGA|TGTT GTGG|GTGA TGAG|GTTG GGTC|GAGA GTCG|AGAT'
-   # s = pairsStrToStrPairs(ps, ' ') |> genomeFromPairs(4, 2)
-   # s |> testVs(s'GTGGTCGTGAGATGTTGA')
+   sp = pairsStrToStrPairs('TCA|GCA TTC|TGC AAT|CAT ATT|ATG', ' ')
+   sp |> genomeFromPairs(3, 1) |> testVs('AATTCATGCA')
 
-   # ps = 'TCA|GCA TTC|TGC AAT|CAT ATT|ATG'
-   # s = pairsStrToStrPairs(ps, ' ') |> genomeFromPairs(3, 1)
-   # s |> testVs(s'AATTCATGCA')
+   sp = pairsStrToStrPairs('GG|GA GT|AT TG|TA GA|AC AT|CT', ' ')
+   sp |> genomeFromPairs(2, 1) |> testVs('GGTGATACT')
 
-   # ps = 'GG|GA GT|AT TG|TA GA|AC AT|CT'
-   # s = pairsStrToStrPairs(ps, ' ') |> genomeFromPairs(2, 1)
-   # s |> testVs(s'GGTGATACT')
+   # sp = pairsStrToStrPairs('GTTT|ATTT TTTA|TTTG TTAC|TTGT TACG|TGTA ACGT|GTAT CGTT|TATT', ' ')
+   # sp |> genomeFromPairs(4, 2) |> testVs('TTTACGTTTGTATTT')
+   # #     # result: CGTTTACGTTTGTAT
 
-   # ps = 'GTTT|ATTT TTTA|TTTG TTAC|TTGT TACG|TGTA ACGT|GTAT CGTT|TATT'
-   # s = pairsStrToStrPairs(ps, ' ') |> genomeFromPairs(4, 2)
-   # s |> testVs(s'TTTACGTTTGTATTT')
-   #     # result: CGTTTACGTTTGTAT
-
-   # ps = 'GGG|GGG AGG|GGG GGG|GGT GGG|GGG GGG|GGG'
-   # s = pairsStrToStrPairs(ps, ' ') |> genomeFromPairs(3, 2)
-   # s |> testVs(s'AGGGGGGGGGGT')
+   sp = pairsStrToStrPairs('GGG|GGG AGG|GGG GGG|GGT GGG|GGG GGG|GGG', ' ')
+   sp |> genomeFromPairs(3, 2) |> testVs('AGGGGGGGGGGT')
 
 # if run(7):
 #    l = readlines('dataset_204_16.txt')
@@ -141,16 +134,31 @@ if run(5):
 #    s = pairStrsToStrPairs(l[1:], '\n') |> genomeFromPairs(i[0], i[1])
 #    s |> echo
 
-# if run(8):
-#    s = s'TAATGCCATGGGATGTT'
-#    contigs(s, 3)
-   # TAAT, TGTT, TGCCAT, ATG, ATG, ATG, TGG, GGG, GGAT.
+# 1.5.4 Construct genome from ordered pairs or "string spelled by gapped patterns"
+if run(8):
+   sp = pairsStrToStrPairs('GACC|GCGC ACCG|CGCC CCGA|GCCG CGAG|CCGG GAGC|CGGA', ' ')
+   sp |> genomeFromOrderedPairs(4, 2) |> testVs(s'GACCGAGCGCCGGA')
 
-if run(9):
-   ps = 'GACC|GCGC ACCG|CGCC CCGA|GCCG CGAG|CCGG GAGC|CGGA'
-   s = pairsStrToStrPairs(ps, ' ') |> genomeFromOrderedPairs(4, 2)
-   s |> testVs(s'GACCGAGCGCCGGA')
    l = readlines('dataset_6206_4.txt')
    i = parseInts(l[0])
-   s = pairStrsToStrPairs(l[1:], '\n') |> genomeFromOrderedPairs(i[0], i[1])
-   s |> echo
+   sp = pairStrsToStrPairs(l[1:], '\n')
+   sp |> genomeFromOrderedPairs(i[0], i[1]) |> echo
+
+# 1.6.2 Find maximal non-branching paths
+if run(9):
+   S = parseGraphStr('1 -> 2|2 -> 3|3 -> 4,5|6 -> 7|7 -> 6', '|')
+   S |> maxNonBranchingPaths |> pathsArrowStr |> testVs('1 -> 2 -> 3\n3 -> 4\n3 -> 5\n6 -> 7 -> 6')
+
+   S = readGraphStr('dataset_6207_2.txt')
+   S |> maxNonBranchingPaths |> pathsArrowStr |> echo
+
+# 1.4.5 Generate Contig - long, contiguous segments of non-branching genome
+if run(10):
+   ptn = s'TAATGCCATGGGATGTT' # See 1.4.4
+   contigsFromSeq(ptn, 3) |> testColl('TAAT TGTT TGCCAT ATG ATG ATG TGG GGG GGAT'.split(' '))
+
+   kmers = parseSeqsStr('ATG ATG TGT TGG CAT GGA GAT AGA')
+   contigs(kmers) |> testColl('AGA ATG ATG CAT GAT TGGA TGT'.split(' '))
+
+   kmers = readseqs('dataset_205_5.txt')
+   contigs(kmers) |> spaceSep |> echo
