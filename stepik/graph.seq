@@ -10,7 +10,6 @@ def eulerianPath(sg:strGraph, kind:str, start:str) -> Strs:
    'path'
    'universal'
    """
-   # print sg
    stack = Strs()
    res = Strs()
    keys = list(sg.keys())
@@ -105,18 +104,13 @@ def mergeOrderedSeqs[T](seqs:list[T]) -> T:
    for i, dna in enumerate(seqs[1:]): 
       if res[i+1:] == dna[:-1]:
          res += dna[-1]
-      else:
-         print 'WARN: mergeOrderedSeqs -> '' due to non-continuous input of', seqs
-         return T()
    return res
 
 def genomeFromSeqs(seqs:Seqs, kind:str, start:str) -> str: 
    """ Reconstruct genome from seqs with method and kind (see eulerianPath())
    """
    sg = AdjGraph(seqs, 'kmers', 0).sg
-   # print 'sg', sg
    path = eulerianPath(sg, kind, start)
-   # print 'path', path
    dna = path |> mergeOrderedSeqs
    if kind != 'universal':
       return dna 
@@ -243,34 +237,33 @@ def genomeFromOrderedPairs(strPairs:StrPairs, k:int, d:int) -> seq:
 def genomeFromPairs(strPairs:StrPairs, k:int, d:int) -> str:
    """ Construct genome from ordered pairs, aka "string spelled by gapped patterns"
    """
+   pairsCnt = len(strPairs)
    A, B = unzipToSeqs(strPairs)
-   # aPath = eulerianPath(aGraph, 'path') |> pathEdgesFromNodes
-   # bPath = eulerianPath(bGraph, 'path') |> pathEdgesFromNodes
    a = genomeFromSeqs(A, 'path', '')
    target = a[k+d:]
    bStart = target[:k-1]
    b = genomeFromSeqs(B, 'path', bStart)
+   tried = StrsSet()
+   aStart = a[:k-1]
+   resLen = pairsCnt + k + d + k-1
+   iA = 0 
 
-   # print 'tar, start', target, bStart
-   # print 'A', A
-   # print 'B', B
-   # print 'a', a
-   # print 'b', b
-   # aGraph = AdjGraph(A, 'kmers', 0).sg
-   # bGraph = AdjGraph(B, 'kmers', 0).sg
-   # # print 'a contigsFromSeq', contigsFromSeq(seq(a), k)
-   # # print 'b contigsFromSeq', contigsFromSeq(seq(b), k)
-   # c2 = contigs(A) 
-   # d2 = contigs(B) 
-   # print 'aGrpah', aGraph |> maxNonBranchingPaths |> pathsArrowStr |> echo
-   # print 'bGrpah', bGraph |> maxNonBranchingPaths |> pathsArrowStr |> echo
-   # print 'a contigs', c2
-   # print 'b contigs', d2
-   # print target, 'vs'
+   while len(tried) < pairsCnt:
+      for i in range(len(a)):
+         b_ = b[i:]+b[:i]
+         if target == b_[:-k-d]:
+            res = a + b_[-k-d:]
+            if len(res) == resLen:
+               return a + b_[-k-d:]
 
-   for i in range(len(a)):
-      b_ = b[i:]+b[:i]
-      # print b_
-      if target == b_[:-k-d]:
-         return a + b_[-k-d:]
-   return a + b[-k-d:]
+      res = a + b[-k-d:]
+      if len(res) == resLen:
+         return a + b[-k-d:]
+      tried.add(aStart)
+      aStart = str(A[iA][:k-1])
+      a = genomeFromSeqs(A, 'path', aStart)
+      target = a[k+d:]
+      bStart = target[:k-1]
+      b = genomeFromSeqs(B, 'path', bStart)
+      iA += 1 
+   return ''

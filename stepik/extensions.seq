@@ -19,7 +19,6 @@ extend seq:
 
    def reverse(s1:seq):
       st = str(s1)
-      # return seq(s[::-1]) # bug - https://github.com/seq-lang/seq/issues/113
       return seq(''.join([s for s in reversed(st)]))
 
    def __sub__(s1:seq, s2:seq) -> int:

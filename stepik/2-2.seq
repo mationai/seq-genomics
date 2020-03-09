@@ -121,18 +121,17 @@ if run(6):
    sp = pairsStrToStrPairs('GG|GA GT|AT TG|TA GA|AC AT|CT', ' ')
    sp |> genomeFromPairs(2, 1) |> testVs('GGTGATACT')
 
-   # sp = pairsStrToStrPairs('GTTT|ATTT TTTA|TTTG TTAC|TTGT TACG|TGTA ACGT|GTAT CGTT|TATT', ' ')
-   # sp |> genomeFromPairs(4, 2) |> testVs('TTTACGTTTGTATTT')
-   # #     # result: CGTTTACGTTTGTAT
+   sp = pairsStrToStrPairs('GTTT|ATTT TTTA|TTTG TTAC|TTGT TACG|TGTA ACGT|GTAT CGTT|TATT', ' ')
+   sp |> genomeFromPairs(4, 2) |> testVs('TTTACGTTTGTATTT')
 
    sp = pairsStrToStrPairs('GGG|GGG AGG|GGG GGG|GGT GGG|GGG GGG|GGG', ' ')
    sp |> genomeFromPairs(3, 2) |> testVs('AGGGGGGGGGGT')
-
-# if run(7):
-#    l = readlines('dataset_204_16.txt')
-#    i = parseInts(l[0])
-#    s = pairStrsToStrPairs(l[1:], '\n') |> genomeFromPairs(i[0], i[1])
-#    s |> echo
+   
+if run(7):
+   l = readlines('dataset_204_16.txt')
+   i = parseInts(l[0])
+   sp = pairStrsToStrPairs(l[1:], '\n')
+   sp |> genomeFromPairs(i[0], i[1]) |> echo # Wrong
 
 # 1.5.4 Construct genome from ordered pairs or "string spelled by gapped patterns"
 if run(8):
