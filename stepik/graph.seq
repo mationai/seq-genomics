@@ -98,7 +98,7 @@ def mergeOrderedSeqs[T](seqs:list[T]) -> T:
       return seqs[0]
    if len(seqs) < 1:
       print 'WARN: mergeOrderedSeqs -> '' due to empty input seqs'
-      return T()
+      return T('')
    res = seqs[0]
    n = len(res)-1
    for i, dna in enumerate(seqs[1:]): 
@@ -164,7 +164,7 @@ def maxNonBranchingPaths(sg:strGraph) -> list[Strs]:
    """ Returns non-branching paths in sg
    """
    res = list[Strs]()
-   processed = StrsSet()
+   seen = StrsSet()
    for src, vals in sg.items():
       if not isTunnelNode(src, sg):
          for val in vals:
@@ -175,23 +175,23 @@ def maxNonBranchingPaths(sg:strGraph) -> list[Strs]:
                v = sg[v][0] if len(sg[v]) > 0 else ''
                if v != '':
                   path.append(v)
-                  processed.add(v)
+                  seen.add(v)
                isTunnel = isTunnelNode(v, sg)
             res.append(path)
-            processed.add(val)
-         processed.add(src)
+            seen.add(val)
+         seen.add(src)
    for src, vals in sg.items():
-      if not src in processed:
+      if not src in seen:
          path = [src]
          v = vals[0] if len(vals) > 0 else ''
          while v != '' and v != src:
             path.append(v)
-            processed.add(v)
+            seen.add(v)
             v = sg[v][0] if len(sg[v]) > 0 else ''
          if v == src:
             path.append(src)
          res.append(path)
-         processed.add(src)
+         seen.add(src)
    return res
 
 def contigsFromSeq(ptn:seq, k:int) -> Strs:
@@ -234,7 +234,7 @@ def genomeFromOrderedPairs(strPairs:StrPairs, k:int, d:int) -> seq:
       print 'WARN: No string spelled by the gapped patterns'
    return seq(ptns1 + ptns2[-(k+d):])
 
-def genomeFromPairs(strPairs:StrPairs, k:int, d:int) -> str:
+def genomeFromPairss(strPairs:StrPairs, k:int, d:int) -> str:
    """ Construct genome from ordered pairs, aka "string spelled by gapped patterns"
    """
    pairsCnt = len(strPairs)

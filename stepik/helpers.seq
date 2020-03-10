@@ -25,6 +25,22 @@ def testIn[T](a:T, b:list[T]):
       print "     result:", a
       print "exp one of:", b
 
+def testVerbose[T](a:T, b:T):
+   if a == b:
+      print "✓ result as expected"
+      return
+   iMismatch = Ints()
+   for i, c in enumerate(a):
+      if len(b) > i and c != b[i]: 
+         iMismatch.append(i)
+   if len(iMismatch) > 10:
+      print f"{len(iMismatch)} or more mismatches, eg.:"
+   cnt = 0
+   for i in iMismatch:
+      if cnt < 10:
+         print f"{i}: got {a[i]}, expected {b[i]}"
+         cnt += 1
+
 def testVs[T](a:T, b:T):
    if a == b:
       print "✓ result as expected"

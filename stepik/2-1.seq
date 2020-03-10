@@ -1,5 +1,6 @@
 from extensions import *
 from helpers import *
+from graph import mergeOrderedSeqs
 from adjGraph import *
 
 # Lesson 2 - Week 1

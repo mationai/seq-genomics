@@ -1,0 +1,13 @@
+from extensions import *
+from helpers import *
+from genelib import *
+
+# Lesson 2 - Week 3 (/35)
+
+# 1.2.4
+if run(1):
+   print translateProtein('AUGGCCAUGGCGCCCAGAACUGAGAUCAAUAGUACCCGUAUUAACGGGUGA')
+   l = readlines('dataset_96_4.txt')
+   l[0] |> translateProtein |> echo
+
+   print 4*2*6*2*4*2*2*2*2

@@ -4,7 +4,7 @@ from adjGraph import *
 from graph import *
 from seqlib import permsOfLen
 
-# Lesson 2 - Week 2
+# Lesson 2 - Week 2 (50/60)
 
 # 1.2.2 - Find Eulerian Cycle
 if run(1):
@@ -126,15 +126,23 @@ if run(6):
 
    sp = pairsStrToStrPairs('GGG|GGG AGG|GGG GGG|GGT GGG|GGG GGG|GGG', ' ')
    sp |> genomeFromPairs(3, 2) |> testVs('AGGGGGGGGGGT')
-   
+
+# NOTE: 7 & 8 not correct. Using maxNonBranchingPaths should help 
 if run(7):
+   l = readlines('2-2-1.3.16-testin.txt')
+   o = readlines('2-2-1.3.16-testout.txt')
+   i = parseInts(l[0])
+   sp = pairStrsToStrPairs(l[1:], '\n')
+   sp |> genomeFromPairs(i[0], i[1]) |> testVerbose(o[0])
+
+if run(8):
    l = readlines('dataset_204_16.txt')
    i = parseInts(l[0])
    sp = pairStrsToStrPairs(l[1:], '\n')
-   sp |> genomeFromPairs(i[0], i[1]) |> echo # Wrong
+   sp |> genomeFromPairs(i[0], i[1]) |> echo
 
 # 1.5.4 Construct genome from ordered pairs or "string spelled by gapped patterns"
-if run(8):
+if run(9):
    sp = pairsStrToStrPairs('GACC|GCGC ACCG|CGCC CCGA|GCCG CGAG|CCGG GAGC|CGGA', ' ')
    sp |> genomeFromOrderedPairs(4, 2) |> testVs(s'GACCGAGCGCCGGA')
 
@@ -144,7 +152,7 @@ if run(8):
    sp |> genomeFromOrderedPairs(i[0], i[1]) |> echo
 
 # 1.6.2 Find maximal non-branching paths
-if run(9):
+if run(10):
    S = parseGraphStr('1 -> 2|2 -> 3|3 -> 4,5|6 -> 7|7 -> 6', '|')
    S |> maxNonBranchingPaths |> pathsArrowStr |> testVs('1 -> 2 -> 3\n3 -> 4\n3 -> 5\n6 -> 7 -> 6')
 
@@ -152,7 +160,7 @@ if run(9):
    S |> maxNonBranchingPaths |> pathsArrowStr |> echo
 
 # 1.4.5 Generate Contig - long, contiguous segments of non-branching genome
-if run(10):
+if run(11):
    ptn = s'TAATGCCATGGGATGTT' # See 1.4.4
    contigsFromSeq(ptn, 3) |> testColl('TAAT TGTT TGCCAT ATG ATG ATG TGG GGG GGAT'.split(' '))
 
