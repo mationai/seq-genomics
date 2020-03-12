@@ -6,8 +6,20 @@ from genelib import *
 
 # 1.2.4
 if run(1):
-   print translateProtein('AUGGCCAUGGCGCCCAGAACUGAGAUCAAUAGUACCCGUAUUAACGGGUGA')
+   ptn = translateProtein('AUGGCCAUGGCGCCCAGAACUGAGAUCAAUAGUACCCGUAUUAACGGGUGA')
+   ptn |> testVs('MAMAPRTEINSTRING')
+
    l = readlines('dataset_96_4.txt')
    l[0] |> translateProtein |> echo
 
-   print 4*2*6*2*4*2*2*2*2
+   ptn = abreviate('Val-Lys-Leu-Phe-Pro-Trp-Phe-Asn-Gln-Tyr')
+   cnt = permCountsOf(ptn)
+   ptn |> testVs('VKLFPWFNQY')
+   cnt |> testVs(6144)
+
+if run(2):
+   ptns = encodePeptide('ATGGCCATGGCCCCCAGAACTGAGATCAATAGTACCCGTATTAACGGGTGA', 'MA')
+   ptns |> testColl('ATGGCC GGCCAT ATGGCC'.split(' '))
+   l = readlines('dataset_96_7.txt')
+   print encodePeptide(l[0], l[1]) |> nlSep
+

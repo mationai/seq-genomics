@@ -1,6 +1,7 @@
 from extensions import *
+from seqlib import product
 
-CodonTable = {
+CodonLU = {
    "UUU":"F", "UUC":"F", "UUA":"L", "UUG":"L",
    "UCU":"S", "UCC":"S", "UCA":"S", "UCG":"S",
    "UAU":"Y", "UAC":"Y", "UAA":"*", "UAG":"*",
@@ -16,12 +17,120 @@ CodonTable = {
    "GUU":"V", "GUC":"V", "GUA":"V", "GUG":"V",
    "GCU":"A", "GCC":"A", "GCA":"A", "GCG":"A",
    "GAU":"D", "GAC":"D", "GAA":"E", "GAG":"E",
-   "GGU":"G", "GGC":"G", "GGA":"G", "GGG":"G"
+   "GGU":"G", "GGC":"G", "GGA":"G", "GGG":"G",
 }
+CodonRevLU = {
+  # Ala
+   "A": 'GCU GCC GCA GCG'.split(' '),
+  # Cys
+   "C": 'UGU UGC'.split(' '),
+  # Asp
+   "D": 'GAU GAC'.split(' '),
+  # Glu
+   "E": 'GAA GAG'.split(' '),
+  # Phe
+   "F": 'UUU UUC'.split(' '),
+  # Gly
+   "G": 'GGU GGC GGA GGG'.split(' '),
+  # His
+   "H": 'CAU CAC'.split(' '),
+  # Ile
+   "I": 'AUU AUC AUA'.split(' '),
+  # Lys
+   "K": 'AAA AAG'.split(' '),
+  # Leu
+   "L": 'CUU CUC CUA CUG UUA UUG'.split(' '),
+  # Met
+   "M": ['AUG'],
+  # Asn
+   "N": 'AAU AAC'.split(' '),
+  # Pro
+   "P": 'CCU CCC CCA CCG'.split(' '),
+  # Gln
+   "Q": 'CAA CAG'.split(' '),
+  # Arg
+   "R": 'CGU CGC CGA CGG AGA AGG'.split(' '),
+  # Ser
+   "S": 'UCU UCC UCA UCG AGU AGC'.split(' '),
+  # Thr
+   "T": 'ACU ACC ACA ACG'.split(' '),
+  # Val
+   "V": 'GUU GUC GUA GUG'.split(' '),
+  # Trp
+   "W": ['UGG'],
+  # Tyr
+   "Y": 'UAU UAC'.split(' '),
+   "*": 'UAG UGA UAA'.split(' '),
+}
+AbrevLU = {
+   "Tyr": 'Y',
+   "Val": 'V',
+   "Gly": 'G',
+   "Ala": 'A',
+   "Glu": 'E',
+   "Asp": 'D',
+   "Leu": 'L',
+   "Arg": 'R',
+   "Pro": 'P',
+   "Gln": 'Q',
+   "His": 'H',
+   "Met": 'M',
+   "Ile": 'I',
+   "Arg": 'R',
+   "Ser": 'S',
+   "Thr": 'T',
+   "Lys": 'K',
+   "Asn": 'N',
+   "Phe": 'F',
+   "Trp": 'W',
+   "Cys": 'C',
+}
+CodonKeyLen = 3
+
+def abreviate(s:str, sep='-') -> str:
+   return ''.join([AbrevLU[r] for r in s.split(sep)])
+
+def strToRNA(dna:str) -> str:
+   return dna.replace('T', 'U')
+def seqToRNA(dna:seq) -> seq:
+   return dna.replace('T', 'U')
+
+def strToDNA(dna:str) -> str:
+   return dna.replace('U', 'T')
+def seqToDNA(dna:seq) -> seq:
+   return dna.replace('U', 'T')
 
 def translateProtein(ptn:str) -> str:
+   """ Return mapping of ptn - str of CodonTable keys
+   """
    if len(ptn) % 3 != 0:
       print "WARN: translateProtein() requires input of length % 3"
       return ''
-   t = CodonTable
+   t = CodonLU
    return ''.join([t[str(c)] for c in seq(ptn).split(3, 3) if t[str(c)] != '*'])
+
+def permCountsOf(ptn:str) -> int:
+   """ Return count of possible keys mapping of ptn - str of CodonTable values
+   """
+   return product([len(CodonRevLU[c]) for c in ptn])
+
+def encodePeptide(dna:str, ptn:str) -> Strs:
+   """ Return Peptide encoding for ptn in dna
+   """
+   res = Strs()
+   l = CodonKeyLen
+   ptnLen = len(ptn)*l
+   for Ptn in seq(dna).split(ptnLen, 1):
+      pVs = ''
+      rVs = ''
+      P = seqToRNA(Ptn)
+      R = seqToRNA(~Ptn)
+      for p, r in [(P[i:i+l], R[i:i+l]) for i in range(0, ptnLen, l)]:
+         if str(p) in CodonLU:
+            pVs += CodonLU[str(p)]
+         if str(r) in CodonLU:
+            rVs += CodonLU[str(r)]
+      if pVs==ptn or rVs==ptn:
+         res.append(str(P))
+   return [strToDNA(s) for s in res]
+
