@@ -21,71 +21,72 @@ CodonLU = {
 }
 CodonRevLU = {
   # Ala
-   "A": 'GCU GCC GCA GCG'.split(' '),
+   'A': 'GCU GCC GCA GCG'.split(' '),
   # Cys
-   "C": 'UGU UGC'.split(' '),
+   'C': 'UGU UGC'.split(' '),
   # Asp
-   "D": 'GAU GAC'.split(' '),
+   'D': 'GAU GAC'.split(' '),
   # Glu
-   "E": 'GAA GAG'.split(' '),
+   'E': 'GAA GAG'.split(' '),
   # Phe
-   "F": 'UUU UUC'.split(' '),
+   'F': 'UUU UUC'.split(' '),
   # Gly
-   "G": 'GGU GGC GGA GGG'.split(' '),
+   'G': 'GGU GGC GGA GGG'.split(' '),
   # His
-   "H": 'CAU CAC'.split(' '),
+   'H': 'CAU CAC'.split(' '),
   # Ile
-   "I": 'AUU AUC AUA'.split(' '),
+   'I': 'AUU AUC AUA'.split(' '),
   # Lys
-   "K": 'AAA AAG'.split(' '),
+   'K': 'AAA AAG'.split(' '),
   # Leu
-   "L": 'CUU CUC CUA CUG UUA UUG'.split(' '),
+   'L': 'CUU CUC CUA CUG UUA UUG'.split(' '),
   # Met
-   "M": ['AUG'],
+   'M': ['AUG'],
   # Asn
-   "N": 'AAU AAC'.split(' '),
+   'N': 'AAU AAC'.split(' '),
   # Pro
-   "P": 'CCU CCC CCA CCG'.split(' '),
+   'P': 'CCU CCC CCA CCG'.split(' '),
   # Gln
-   "Q": 'CAA CAG'.split(' '),
+   'Q': 'CAA CAG'.split(' '),
   # Arg
-   "R": 'CGU CGC CGA CGG AGA AGG'.split(' '),
+   'R': 'CGU CGC CGA CGG AGA AGG'.split(' '),
   # Ser
-   "S": 'UCU UCC UCA UCG AGU AGC'.split(' '),
+   'S': 'UCU UCC UCA UCG AGU AGC'.split(' '),
   # Thr
-   "T": 'ACU ACC ACA ACG'.split(' '),
+   'T': 'ACU ACC ACA ACG'.split(' '),
   # Val
-   "V": 'GUU GUC GUA GUG'.split(' '),
+   'V': 'GUU GUC GUA GUG'.split(' '),
   # Trp
-   "W": ['UGG'],
+   'W': ['UGG'],
   # Tyr
-   "Y": 'UAU UAC'.split(' '),
-   "*": 'UAG UGA UAA'.split(' '),
+   'Y': 'UAU UAC'.split(' '),
+   '*': 'UAG UGA UAA'.split(' '),
 }
 AbrevLU = {
-   "Tyr": 'Y',
-   "Val": 'V',
-   "Gly": 'G',
-   "Ala": 'A',
-   "Glu": 'E',
-   "Asp": 'D',
-   "Leu": 'L',
-   "Arg": 'R',
-   "Pro": 'P',
-   "Gln": 'Q',
-   "His": 'H',
-   "Met": 'M',
-   "Ile": 'I',
-   "Arg": 'R',
-   "Ser": 'S',
-   "Thr": 'T',
-   "Lys": 'K',
-   "Asn": 'N',
-   "Phe": 'F',
-   "Trp": 'W',
-   "Cys": 'C',
+   'Tyr': 'Y',
+   'Val': 'V',
+   'Gly': 'G',
+   'Ala': 'A',
+   'Glu': 'E',
+   'Asp': 'D',
+   'Leu': 'L',
+   'Arg': 'R',
+   'Pro': 'P',
+   'Gln': 'Q',
+   'His': 'H',
+   'Met': 'M',
+   'Ile': 'I',
+   'Arg': 'R',
+   'Ser': 'S',
+   'Thr': 'T',
+   'Lys': 'K',
+   'Asn': 'N',
+   'Phe': 'F',
+   'Trp': 'W',
+   'Cys': 'C',
 }
 CodonKeyLen = 3
+
 
 def abreviate(s:str, sep='-') -> str:
    return ''.join([AbrevLU[r] for r in s.split(sep)])
@@ -133,4 +134,43 @@ def encodePeptide(dna:str, ptn:str) -> Strs:
       if pVs==ptn or rVs==ptn:
          res.append(str(P))
    return [strToDNA(s) for s in res]
+
+def calcPeptideLen(l:int) -> int:
+   return l * (l - 1)
+
+MassLU = {
+   'G': 57,
+   'A': 71,
+   'S': 87,
+   'P': 97,
+   'V': 99,
+   'T': 101,
+   'C': 103,
+   'I': 113,
+   'L': 113,
+   'N': 114,
+   'D': 115,
+   'K': 128,
+   'Q': 128,
+   'E': 129,
+   'M': 131,
+   'H': 137,
+   'F': 147,
+   'R': 156,
+   'Y': 163,
+   'W': 186,
+}
+
+def linearSpectrum(peptide:str) -> Ints:
+   """ Cyclospectrum:  collection of all of the masses of its subpeptides,
+    in addition to the mass 0 and the mass of the entire peptide, with
+    masses ordered from smallest to largest. 
+    """
+   l = len(peptide)
+   mass = [0]
+
+   for s in peptide:
+      mass.append(MassLU[s] + mass[-1])
+   res = [0]+[mass[j] - mass[i] for i in range(l) for j in range(i+1, l+1)]
+   return sorted(res)
 

@@ -2,7 +2,6 @@ from extensions import *
 from adjGraph import *
 from helpers import *
 
-# def eulerianPath(sg:strGraph, kind:str) -> Strs:
 def eulerianPath(sg:strGraph, kind:str, start:str) -> Strs:
    """ See http://www.graph-magics.com/articles/euler.php
    kind one of:

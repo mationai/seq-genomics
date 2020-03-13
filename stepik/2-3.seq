@@ -23,3 +23,13 @@ if run(2):
    l = readlines('dataset_96_7.txt')
    print encodePeptide(l[0], l[1]) |> nlSep
 
+if run(3):
+   calcPeptideLen(1) |> testVs(0)
+   calcPeptideLen(4) |> testVs(12)
+   calcPeptideLen(31315) |> testVs(980597910)
+   calcPeptideLen(25013) |> echo
+
+# 1.7
+if run(4):
+   linearSpectrum('NQEL') |> spaceSep |> testVs('0 113 114 128 129 242 242 257 370 371 484')
+   linearSpectrum('WQMMSPIGSCNAWFYPKLMSKWSSRDAVTFVAKMIQYMHMRPPT') |> spaceSep |> echo
