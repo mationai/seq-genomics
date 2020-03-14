@@ -232,24 +232,42 @@ def expand(peptides:Strs, expansions=PeptideChars) -> Strs:
    """
    return [p + c for p in peptides for c in expansions]
 
-def isInconsistent(peptide:str, spectrum:Ints) -> bool:
+def isConsistent(peptide:str, spectrum:Ints) -> bool:
    """ A linear peptide consistent with spectrum if all mass in its
     theoretical spectrum is contained in spectrum
    """
    S = spectrum[:]
    for i in linearSpectrum(peptide):
       if i not in S:
-         return True
+         return False
       S.remove(i)
-   return False
+   return True
 
 def parentMass(spectrum:Ints) -> int:
    return spectrum[-1] # spectrum is sorted, so last is max
 
 def cyclopeptidesSequencing(spectrum):
+   """ Cyclopeptide Sequencing via Branch-and-Bound.
+   If a mass appears more than once in the theoretical spectrum of the linear peptide,
+    then it must appear at least that many times in Spectrum in order for the
+    linear peptide to be consistent with Spectrum. Eg., a linear peptide can still
+    be consistent with the theoretical spectrum of NQEL if the peptide’s spectrum
+    contains 242 twice. But it cannot be consistent with the theoretical spectrum
+    of NQEL if its spectrum contains 113 twice.
+
+   The key to the algorithm is that every linear subpeptide of a cyclic peptide Peptide
+    is consistent with Cyclospectrum(Peptide). Thus, to solve the Cyclopeptide Sequencing
+    Problem for Spectrum, we can safely ban all peptides that are inconsistent with Spectrum
+    from the growing set Peptides, which powers the bounding step that we described above.
+
+   For example, the linear peptide VKF (with spectrum {0, 99, 128, 147, 227, 275, 374})
+    will be banned because it is inconsistent with Tyrocidine B1’s spectrum.
+    But the linear peptide VKY will not be banned because every mass in its theoretical
+    spectrum ({0, 99, 128, 163, 227, 291, 390}) is present in Tyrocidine B1's spectrum.
+   """
    peptides = set([''])
    res = list[Ints]()
-   expansions = [p for p in expand(list(peptides)) if not isInconsistent(p, spectrum)]
+   expansions = [p for p in expand(list(peptides)) if isConsistent(p, spectrum)]
 
    while len(peptides) > 0:
       peptides = set(expand(list(peptides), expansions))
@@ -258,6 +276,6 @@ def cyclopeptidesSequencing(spectrum):
             if cycloSpectrum(peptide) == spectrum:
                res.append(peptideMasses(peptide))
             peptides.remove(peptide)
-         elif isInconsistent(peptide, spectrum):
+         elif not isConsistent(peptide, spectrum):
             peptides.remove(peptide)
    return list(set(res))
