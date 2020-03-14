@@ -1,4 +1,5 @@
 from extensions import *
+from helpers import runningSums
 from seqlib import product
 
 CodonLU = {
@@ -111,7 +112,7 @@ def translateProtein(ptn:str) -> str:
    return ''.join([t[str(c)] for c in seq(ptn).split(3, 3) if t[str(c)] != '*'])
 
 def permCountsOf(ptn:str) -> int:
-   """ Return count of possible keys mapping of ptn - str of CodonTable values
+   """ Return count of possible keys mapping of ptn (str of CodonTable values)
    """
    return product([len(CodonRevLU[c]) for c in ptn])
 
@@ -135,8 +136,15 @@ def encodePeptide(dna:str, ptn:str) -> Strs:
          res.append(str(P))
    return [strToDNA(s) for s in res]
 
-def calcPeptideLen(l:int) -> int:
+def getCycloSubpeptidesCnt(l:int) -> int:
+   """ Returns # of subpetitdes for length l, including cycles; excludes empty and itself
+   """
    return l * (l - 1)
+
+def getLinearSubpeptidesCnt(l:int) -> int:
+   """ Returns # of subpetitdes for length l, excluding cycles; includes empty and itself
+   """
+   return getCycloSubpeptidesCnt(l) +2 -sum(range(1, l-1)) # range() lists subpeptides counts that wraps
 
 MassLU = {
    'G': 57,
@@ -161,16 +169,58 @@ MassLU = {
    'W': 186,
 }
 
-def linearSpectrum(peptide:str) -> Ints:
-   """ Cyclospectrum:  collection of all of the masses of its subpeptides,
-    in addition to the mass 0 and the mass of the entire peptide, with
-    masses ordered from smallest to largest. 
-    """
-   l = len(peptide)
-   mass = [0]
+def peptideMasses(peptide:str) -> Ints:
+   """ Returns list of masses mapped from peptide strs
+   """
+   return [MassLU[s] for s in peptide]
 
-   for s in peptide:
-      mass.append(MassLU[s] + mass[-1])
-   res = [0]+[mass[j] - mass[i] for i in range(l) for j in range(i+1, l+1)]
+def peptideMass(peptide:str) -> int:
+   """ Returns mass of sum of strings in peptide
+   """
+   return sum(peptideMasses(peptide))
+
+def linearSpectrum(peptide:str) -> Ints:
+   """ Returns collection of all of the masses of its nonwrapping subpeptides, with
+   masses ordered from smallest to largest. 
+   """
+   mass = peptideMasses(peptide) |> runningSums
+   l = len(peptide)
+   # self-referencing nested ("triangular") loop to iterate through what mass of j - i
+   # , which should computes mass of linear subpeptides. 
+   # cycloSpectrum() with this result + masses of wrapSubpeptides() returns few masses short
+   #   however, and wrapSubpeptides() is verified correct, so perhaps this doesn't compute 
+   #   all linear subpeptide masses.
+   res = [0] + [mass[j] - mass[i] for i in range(l) for j in range(i+1, l+1)]
    return sorted(res)
 
+def wrapSubpeptides(peptide:str) -> Strs:
+   """ Returns only wrapping subpeptides
+   """
+   pLen = len(peptide)
+   if pLen < 2:
+      return Strs()
+   res = StrsSet()
+
+   for i in range(1, len(peptide)-2):
+      res.add(peptide[-1]+peptide[:i+1])
+      res.add(peptide[-i-1:]+peptide[0])
+   res.add(peptide[-1]+peptide[0])
+   return list(res)
+
+def subpeptides(peptide:str) -> Strs:
+   """ Returns all subpeptides
+   """
+   pLen = len(peptide)
+   res = Strs()
+   wrapped = peptide + peptide
+   for start in range(0, pLen):
+      for length in range(1, pLen):
+         res.append((wrapped[start:start + length]))
+   res.append(peptide)
+   return res
+
+def cycloSpectrum(peptide:str) -> Ints:
+   """ Like linearSpectrum, but includes masses of wrapping subpeptides.
+   """
+   masses = [0] + [peptideMass(p) for p in subpeptides(peptide)]
+   return sorted(masses)
