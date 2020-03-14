@@ -1,6 +1,6 @@
 from extensions import *
 from helpers import *
-from genelib import *
+from peptidelib import *
 
 # Lesson 2 - Week 3 (35/35)
 
@@ -25,10 +25,10 @@ if run(2):
 
 # 1.4.3
 if run(3):
-   getCycloSubpeptidesCnt(1) |> testVs(0)
-   getCycloSubpeptidesCnt(4) |> testVs(12)
-   getCycloSubpeptidesCnt(31315) |> testVs(980597910)
-   getCycloSubpeptidesCnt(25013) |> echo
+   cycloSubpeptidesCount(1) |> testVs(0)
+   cycloSubpeptidesCount(4) |> testVs(12)
+   cycloSubpeptidesCount(31315) |> testVs(980597910)
+   cycloSubpeptidesCount(25013) |> echo
 
 # 1.7
 if run(4):
@@ -45,8 +45,8 @@ if run(5):
 
 # 1.6.3
 if run(6):
-   getLinearSubpeptidesCnt(4) |> testVs(11)
-   getLinearSubpeptidesCnt(37704) |> testVs(710814661)
+   linearSubpeptidesCount(4) |> testVs(11)
+   linearSubpeptidesCount(37704) |> testVs(710814661)
 
 # 1.6.6
 if run(7):

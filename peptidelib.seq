@@ -136,15 +136,15 @@ def encodePeptide(dna:str, ptn:str) -> Strs:
          res.append(str(P))
    return [strToDNA(s) for s in res]
 
-def getCycloSubpeptidesCnt(l:int) -> int:
+def cycloSubpeptidesCount(l:int) -> int:
    """ Returns # of subpetitdes for length l, including cycles; excludes empty and itself
    """
    return l * (l - 1)
 
-def getLinearSubpeptidesCnt(l:int) -> int:
+def linearSubpeptidesCount(l:int) -> int:
    """ Returns # of subpetitdes for length l, excluding cycles; includes empty and itself
    """
-   return getCycloSubpeptidesCnt(l) +2 -sum(range(1, l-1)) # range() lists subpeptides counts that wraps
+   return cycloSubpeptidesCount(l) +2 -sum(range(1, l-1)) # range() lists subpeptides counts that wraps
 
 MassLU = {
    'G': 57,
@@ -233,7 +233,7 @@ def expand(peptides:Strs, expansions=PeptideChars) -> Strs:
    return [p + c for p in peptides for c in expansions]
 
 def isConsistent(peptide:str, spectrum:Ints) -> bool:
-   """ A linear peptide consistent with spectrum if all mass in its
+   """ A linear peptide is consistent with spectrum if all mass in its
     theoretical spectrum is contained in spectrum
    """
    S = spectrum[:]
@@ -247,13 +247,14 @@ def parentMass(spectrum:Ints) -> int:
    return spectrum[-1] # spectrum is sorted, so last is max
 
 def cyclopeptidesSequencing(spectrum):
-   """ Cyclopeptide Sequencing via Branch-and-Bound.
+   """ Cyclopeptide Sequencing
+   A brute force way is to check if spectrum == cycloSpectrum(peptide) for all peptide
+    where mass of peptide == parentMass of spectrum. This will take a while however.
+
+   Via Branch-and-Bound:
    If a mass appears more than once in the theoretical spectrum of the linear peptide,
     then it must appear at least that many times in Spectrum in order for the
-    linear peptide to be consistent with Spectrum. Eg., a linear peptide can still
-    be consistent with the theoretical spectrum of NQEL if the peptide’s spectrum
-    contains 242 twice. But it cannot be consistent with the theoretical spectrum
-    of NQEL if its spectrum contains 113 twice.
+    linear peptide to be consistent with Spectrum.
 
    The key to the algorithm is that every linear subpeptide of a cyclic peptide Peptide
     is consistent with Cyclospectrum(Peptide). Thus, to solve the Cyclopeptide Sequencing
@@ -264,6 +265,9 @@ def cyclopeptidesSequencing(spectrum):
     will be banned because it is inconsistent with Tyrocidine B1’s spectrum.
     But the linear peptide VKY will not be banned because every mass in its theoretical
     spectrum ({0, 99, 128, 163, 227, 291, 390}) is present in Tyrocidine B1's spectrum.
+
+   Note this method only works in ideal spectrums, ie. when the spectrum of a peptide
+    coincides exactly with its theorectical spectrum.
    """
    peptides = set([''])
    res = list[Ints]()
