@@ -25,8 +25,8 @@ That being said, its speed, statical typing, pipeline operator `|>`, and similar
 
 3. Run via `seqc FILE.seq ARG`, eg.:
   ```
-  seqc stepik/1-1.seq 1  # run exercise 1 in stepik-01.seq
-  seqc stepik/1-1.seq    # run all exercises in stepik-01.seq
+  seqc stepik/1-1.seq 1  # run exercise 1 in stepik/1-1.seq
+  seqc stepik/1-1.seq    # run all exercises in stepik/1-1.seq
   ```
 
 

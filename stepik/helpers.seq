@@ -73,7 +73,7 @@ def parseInts(s:str, sep=' ') -> Ints:
 def parseFloats(s:str, sep=' ') -> Floats:
    return [float(x) for x in s.split(sep) if x.strip()]
 
-def parseStrsStr(s:str, sep=' ') -> Strs:
+def parseToStrs(s:str, sep=' ') -> Strs:
    return [x for x in s.split(sep) if x.strip()]
 
 def parseSeqsStr(s:str, sep=' ') -> Seqs:
@@ -105,6 +105,14 @@ def pairStrsToStrPairs(strs:Strs, sep='\n', pairSep='|') -> StrPairs:
       a, b = s.split(pairSep)
       res.append((a, b))
    return res
+
+def toDashed[T](LL:list[list[T]]) -> str:
+   """ Returns eg. [[1, 2], [3, 4]] to '1-2 3-4'
+   """
+   res = Strs()
+   for L in LL:
+      res.append('-'.join([str(i) for i in L]))
+   return ' '.join(sorted(res))
 
 def toPairsStrs(pairs:Pairs, sep='|') -> Strs:
    """ Returns list of "(a1|b1)" representation of input pairs

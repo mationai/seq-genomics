@@ -168,6 +168,7 @@ MassLU = {
    'Y': 163,
    'W': 186,
 }
+PeptideChars = MassLU.keys()
 
 def peptideMasses(peptide:str) -> Ints:
    """ Returns list of masses mapped from peptide strs
@@ -224,3 +225,39 @@ def cycloSpectrum(peptide:str) -> Ints:
    """
    masses = [0] + [peptideMass(p) for p in subpeptides(peptide)]
    return sorted(masses)
+
+
+def expand(peptides:Strs, expansions=PeptideChars) -> Strs:
+   """ Eg. peptides=[ab bc], expansions=[a d] -> [aba abd bca bcd]
+   """
+   return [p + c for p in peptides for c in expansions]
+
+def isInconsistent(peptide:str, spectrum:Ints) -> bool:
+   """ A linear peptide consistent with spectrum if all mass in its
+    theoretical spectrum is contained in spectrum
+   """
+   S = spectrum[:]
+   for i in linearSpectrum(peptide):
+      if i not in S:
+         return True
+      S.remove(i)
+   return False
+
+def parentMass(spectrum:Ints) -> int:
+   return spectrum[-1] # spectrum is sorted, so last is max
+
+def cyclopeptidesSequencing(spectrum):
+   peptides = set([''])
+   res = list[Ints]()
+   expansions = [p for p in expand(list(peptides)) if not isInconsistent(p, spectrum)]
+
+   while len(peptides) > 0:
+      peptides = set(expand(list(peptides), expansions))
+      for peptide in peptides:
+         if peptideMass(peptide) == parentMass(spectrum):
+            if cycloSpectrum(peptide) == spectrum:
+               res.append(peptideMasses(peptide))
+            peptides.remove(peptide)
+         elif isInconsistent(peptide, spectrum):
+            peptides.remove(peptide)
+   return list(set(res))
