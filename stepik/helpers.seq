@@ -2,14 +2,20 @@ from sys import argv
 from extensions import *
 
 
-def runningSums[T](ls:list[T]) -> list[T]:
-   return [sum(ls[:i]) for i in range(len(ls)+1)]
+def histogram[T](L:list[T]) -> dict[T, int]:
+   res = dict[T, int]()
+   for i in L:
+      res[i] = res[i]+1 if i in res else 1
+   return res
 
-def spaceSep[T](ls:list[T]) -> str:
-   return ' '.join([str(k) for k in ls])
+def runningSums[T](L:list[T]) -> list[T]:
+   return [sum(L[:i]) for i in range(len(L)+1)]
 
-def nlSep[T](ls:list[T]) -> str:
-   return '\n'.join([str(k) for k in ls])
+def spaceSep[T](L:list[T]) -> str:
+   return ' '.join([str(x) for x in L])
+
+def nlSep[T](L:list[T]) -> str:
+   return '\n'.join([str(x) for x in L])
 
 def run(n:int) -> bool:
    x = argv[1] if len(argv) > 1 else ''
@@ -18,15 +24,15 @@ def run(n:int) -> bool:
       print '\n'+str(n)+':'
    return res
 
-def testIn[T](a:T, b:list[T]):
-   if any(a==x for x in b):
+def testIn[T](a:T, B:list[T]):
+   if any(a==x for x in B):
       print "✓ result as expected"
-   elif len(b)==1:
+   elif len(B)==1:
       print "  result:", a
-      print "expected:", b[0]
+      print "expected:", B[0]
    else:
       print "     result:", a
-      print "exp one of:", b
+      print "exp one of:", B
 
 def testVerbose[T](a:T, b:T):
    if a == b:
@@ -70,6 +76,9 @@ def testColl[T](A:list[T], B:list[T]):
 def parseInts(s:str, sep=' ') -> Ints:
    return [int(x) for x in s.split(sep) if x.strip()]
 
+def parseIntsList(S:Strs, sep=' ') -> list[Ints]:
+   return [parseInts(s) for s in S]
+
 def parseFloats(s:str, sep=' ') -> Floats:
    return [float(x) for x in s.split(sep) if x.strip()]
 
@@ -106,13 +115,19 @@ def pairStrsToStrPairs(strs:Strs, sep='\n', pairSep='|') -> StrPairs:
       res.append((a, b))
    return res
 
-def toDashed[T](LL:list[list[T]]) -> str:
+def listToStr[T](L:list[T], sep=' ') -> str:
+   return sep.join([str(x) for x in L])
+
+def toDashed[T](L:list[T]) -> str:
+   return '-'.join([str(i) for i in L])
+   
+def spaceDashed[T](LL:list[list[T]], sort=True) -> str:
    """ Returns eg. [[1, 2], [3, 4]] to '1-2 3-4'
    """
    res = Strs()
    for L in LL:
       res.append('-'.join([str(i) for i in L]))
-   return ' '.join(sorted(res))
+   return ' '.join(sorted(res) if sort else res)
 
 def toPairsStrs(pairs:Pairs, sep='|') -> Strs:
    """ Returns list of "(a1|b1)" representation of input pairs

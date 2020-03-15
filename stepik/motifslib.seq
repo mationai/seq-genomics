@@ -4,9 +4,9 @@ from extensions import Profile, SeqFloatDict
 from seqlib import *
 
 
-def histogram(motifs:Seqs, initCnt=1) -> dict[seq, list[int]]:
+def acgtHistogram(motifs:Seqs, initCnt=1) -> dict[seq, list[int]]:
    """ Returns {
-     'A': [position-0 count, ...]
+     'A': [position-0 count, position-1 count, ...]
      ...
    }
    """
@@ -29,7 +29,7 @@ def motifsProfile(motifs:Seqs, initCnt=1) -> Profile:
      ...
    }
    """
-   counts = histogram(motifs, initCnt)
+   counts = acgtHistogram(motifs, initCnt)
    return {c: [x/float(len(motifs)) for x in counts[c]] for c in counts}
 
 def motifsScore(motifs:Seqs, initCnt=1) -> int:
@@ -40,7 +40,7 @@ def motifsScore(motifs:Seqs, initCnt=1) -> int:
       raise ValueError('Unexpected motifs length of 0')
    motifLen = len(motifs[0])
    maxcount = [0 for i in range(motifLen)]
-   counts = histogram(motifs, initCnt)
+   counts = acgtHistogram(motifs, initCnt)
 
    for i in range(motifLen):
       for c in s'ACGT':
