@@ -47,3 +47,8 @@ or not, but since `Kmer[n]` requires `n` to be a compile time constant, it' not 
 ```python
 abs(k1 - k2) # vs. len([1 for i in range(len(k1)) if k1[i] != k2[i]])
 ```
+
+### Missing Features
+`reversed=bool` in `.sort()` or `sorted()`, so using `[::-1]` 
+
+`lambda` - Need to define and pass the function

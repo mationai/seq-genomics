@@ -175,3 +175,5 @@ def readGraphStr(p:str) -> strGraph:
    s = '\n'.join(open(dPath(p), 'r').readlines())
    return parseGraphStr(s)
 
+def getSI1[T](x:tuple[str, int]) -> int:
+   return x[1]

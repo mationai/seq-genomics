@@ -1,5 +1,5 @@
 from extensions import *
-from helpers import runningSums, histogram, listToStr
+from helpers import *
 from seqlib import product
 
 CodonLU = {
@@ -146,7 +146,7 @@ def linearSubpeptidesCount(l:int) -> int:
    """
    return cycloSubpeptidesCount(l) +2 -sum(range(1, l-1)) # range() lists subpeptides counts that wraps
 
-MassLU = {
+AminoMass = {
    'G': 57,
    'A': 71,
    'S': 87,
@@ -167,14 +167,15 @@ MassLU = {
    'R': 156,
    'Y': 163,
    'W': 186,
-}
-PeptideChars = list(MassLU.keys())
-PeptideMasses = list(set(MassLU.values()))
+} # 20 amino acids
+Aminos = list(AminoMass.keys())
+AminoMasses = list(set(AminoMass.values()))
+UniqueMassAminos = [a for a in Aminos if a not in ['L','Q']]
 
 def peptideMasses(peptide:str) -> Ints:
    """ Returns list of masses mapped from peptide strs
    """
-   return [MassLU[s] for s in peptide]
+   return [AminoMass[s] for s in peptide]
 
 def peptideMass(peptide:str) -> int:
    """ Returns mass of sum of strings in peptide
@@ -190,8 +191,8 @@ def linearSpectrum(peptide:str) -> Ints:
    # self-referencing nested ("triangular") loop to iterate through what mass of j - i
    # , which should computes mass of linear subpeptides. 
    # cycloSpectrum() with this result + masses of wrapSubpeptides() returns few masses short
-   #   however, and wrapSubpeptides() is verified correct, so perhaps this doesn't compute 
-   #   all linear subpeptide masses.
+   #  however, and wrapSubpeptides() is verified correct, so perhaps this doesn't compute 
+   #  all linear subpeptide masses.
    res = [0] + [mass[j] - mass[i] for i in range(l) for j in range(i+1, l+1)]
    return sorted(res)
 
@@ -228,7 +229,7 @@ def cycloSpectrum(peptide:str) -> Ints:
    return sorted(masses)
 
 
-def expand(peptides=[''], expansions=PeptideChars) -> Strs:
+def expand(peptides=[''], expansions=Aminos) -> Strs:
    """ Eg. peptides=[ab bc], expansions=[a d] -> [aba abd bca bcd]
    """
    return [p + c for p in peptides for c in expansions]
@@ -244,9 +245,6 @@ def isConsistent(peptide:str, spectrum:Ints) -> bool:
       S.remove(i)
    return True
 
-def parentMass(spectrum:Ints) -> int:
-   return spectrum[-1] # spectrum is sorted, so last is max
-
 def countPeptidesFrom(mass:int, masses=IntIntDict()) -> tuple[int, IntIntDict]:
    """ Returns count of all possible peptides whose mass is mass
    """
@@ -258,7 +256,7 @@ def countPeptidesFrom(mass:int, masses=IntIntDict()) -> tuple[int, IntIntDict]:
       return masses[mass], masses
 
    res = 0
-   for i in PeptideMasses:
+   for i in AminoMasses:
       n, masses = countPeptidesFrom(mass - i, masses)
       res += n
    masses[mass] = res
@@ -291,11 +289,12 @@ def cyclopeptidesSequencing(spectrum:Ints) -> list[Ints]:
    peptides = set([''])
    res = list[Ints]()
    expansions = [p for p in expand(list(peptides)) if isConsistent(p, spectrum)]
+   parentMass = spectrum[-1]
 
    while len(peptides) > 0:
       peptides = set(expand(list(peptides), expansions))
       for peptide in peptides:
-         if peptideMass(peptide) == parentMass(spectrum):
+         if peptideMass(peptide) == parentMass:
             if cycloSpectrum(peptide) == spectrum:
                res.append(peptideMasses(peptide))
             peptides.remove(peptide)
@@ -309,37 +308,62 @@ def peptideScore(peptide:str, spectrum:Ints, kind='linear') -> int:
    'linearScore' if kind is 'linear', cycloScore otherwise
    """
    pepSpectrum = linearSpectrum(peptide) if kind=='linear' else cycloSpectrum(peptide)
-   pepCnt = histogram(pepSpectrum)
-   expCnt = histogram(spectrum)
-   return sum([min(expCnt[mass], pepCnt[mass]) for mass in pepCnt if mass in expCnt])
+   massCnt = histogram(pepSpectrum)
+   expMassCnt = histogram(spectrum)
+   return sum([min(expMassCnt[m], massCnt[m]) for m in massCnt if m in expMassCnt])
 
-def topScoringPeptides(peptides:Strs, spectrum:Ints, topN:int) -> Strs:
-   """ sorts all leaderboard peptides according to their scores.
+def trimPeptides(peptides:Strs, spectrum:Ints, topN:int, minScore=0) -> Strs:
+   """ Sorts all leaderboard peptides according to their scores.
    Return all peptides with score better or equal to score of topN
+   If minScore is passed, it will be used instead of topN to obtain the min score.
    """
-   if len(peptides) < 1:
-      return Strs()
+   if len(peptides) <= topN and minScore==0:
+      return peptides
    scores = [peptideScore(p, spectrum) for p in peptides]
-   res = [x for _, x in sorted(zip(scores, peptides))] # sort peptides based on scores order
-   scores = sorted(scores)[::-1]
-   minTopScore = scores[topN-1] if len(scores) > topN-1 else scores[-1]
-
-   for i in range(len(peptides)):
-      if scores[i] < minTopScore:
-         return res[-i:][::-1]
-   return res
+   scoredRes = [(p, peptideScore(p, spectrum)) for p in peptides]
+   sortedRes = sorted(scoredRes, key=getSI1)[::-1]
+   minScore = sortedRes[topN-1][1] if minScore==0 else minScore
+   return [x[0] for x in sortedRes if x[1] >= minScore]
 
 def topCyclopeptideSequencing(spectrum:Ints, topN:int) -> Ints:
+   """ aka Leaderboard Cyclopeptide Sequencing
+   Returns top peptide masses
+   """
+   parentMass = spectrum[-1]
    topPeptides = ['']
    topPeptide = ''
+
    while len(topPeptides) > 0:
-      peptides = set(expand(topPeptides))
-      for peptide in peptides:
-         mass = peptideMass(peptide)
-         if mass == parentMass(spectrum):
-            if peptideScore(peptide, spectrum) > peptideScore(topPeptide, spectrum):
-               topPeptide = peptide
-         elif mass > parentMass(spectrum):
-            peptides.remove(peptide)
-      topPeptides = topScoringPeptides(list(peptides), spectrum, topN)
+      leaderboard = set(expand(topPeptides))
+      for p in leaderboard:
+         mass = peptideMass(p)
+         if mass == parentMass:
+            if peptideScore(p, spectrum) > peptideScore(topPeptide, spectrum):
+               topPeptide = p
+         elif mass > parentMass:
+            leaderboard.remove(p)
+      topPeptides = trimPeptides(list(leaderboard), spectrum, topN)
    return peptideMasses(topPeptide)[::-1]
+
+def topPeptidesCyclopeptideSequencing(spectrum:Ints, topN=1000) -> list[Ints]:
+   """ Like Leaderboard Cyclopeptide Sequencing, but
+   Returns all top peptides masses
+   """
+   parentMass = spectrum[-1]
+   topPeptides = ['']
+   leaderboard = set(topPeptides)
+
+   while len(leaderboard) > 0:
+      leaderboard = set(expand(leaderboard, UniqueMassAminos))
+      for p in leaderboard:
+         mass = peptideMass(p)
+         if mass == parentMass:
+            score = peptideScore(p, spectrum, 'cyc')
+            topScore = peptideScore(topPeptides[0], spectrum, 'cyc')
+            if score >= topScore:
+               topPeptides = [p] if score > topScore else topPeptides+[p]
+         elif mass > parentMass:
+            leaderboard.remove(p)
+      leaderboard = set(trimPeptides(list(leaderboard), spectrum, topN))
+   return [peptideMasses(p)[::-1] for p in topPeptides]
+
