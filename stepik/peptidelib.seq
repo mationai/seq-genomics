@@ -377,15 +377,40 @@ def getTopMasses(L:list[SIPair], topN:int) -> Ints:
    minCnt = L[topN-1][1]
    return [int(x[0]) for x in L if x[1] >= minCnt]
 
-def convolutionSequencing(spectrum:Ints, topM=20, topN=60):# -> Ints:#list[Ints]:
-   c = 0
-   counts = histogram(spectralConvolution(spectrum))
+def convolutionSequencing(spectrum:Ints, topM=20, topN=60) -> list[Ints]:
+   counts = spectralConvolution(spectrum) |> histogram
    massCnts = [(str(k), v) for k, v in counts.items()]
    sortedMasses = sorted(massCnts, key=getSI1)[::-1]
    topMasses = getTopMasses(sortedMasses, topM)
    alphabet = [ExtAminoRevLU[i] for i in topMasses]
-   leader_pep = topPeptidesSequencing(spectrum, 'extended', topN, alphabet)
-   return leader_pep
+   return topPeptidesSequencing(spectrum, 'extended', topN, alphabet)
+
+def floatsSpectrumToInts(spectrum:Floats) -> Ints:
+   """ spectrum are ions assumed to have a +1 charge and with a mass error of 0.3 Da.
+    Outputs an integer mass spectrum.
+   """
+   masses = [x-1.0 for x in spectrum] # remove +1 charge
+   rounded = Ints()
+   for mass in masses:
+      if mass - int(mass) == 0.5: # rounded up & down if x.5
+         rounded.append(int(mass)+1)
+         rounded.append(int(mass))
+      else:
+         # take 2 common ints from 3 of: -.3, +0, +.3 (all +.5 to floor)
+         m3 = [int(mass+0.2), int(mass+0.5), int(mass+0.8)]
+         mid = sorted(m3)[1]
+         rounded.append(mid)
+   return sorted(rounded)
+    
+def protonMassSpecCyclopeptideSequencing(fSpectrum:Floats, topM:int, topN:int) -> Ints:
+   spectrum = floatsSpectrumToInts(fSpectrum)
+   counts = spectralConvolution(spectrum) |> histogram
+   massCnts = [(str(k), v) for k, v in counts.items()]
+   sortedMasses = sorted(massCnts, key=getSI1)[::-1]
+   topMasses = getTopMasses(sortedMasses, topM)
+   alphabet = [ExtAminoRevLU[i] for i in topMasses]
+   tops = topPeptidesSequencing(spectrum, 'extended', topN, alphabet)
+   return tops[0]
 
 
 def wrapSubpeptides(peptide:str) -> Strs:
