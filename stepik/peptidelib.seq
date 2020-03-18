@@ -172,7 +172,10 @@ Aminos = list(AminoMass.keys())
 AminoMasses = list(set(AminoMass.values()))
 UniqueMassAminos = [a for a in Aminos if a not in ['L','Q']]
 
-ExtAminoMass = {chr(i-74): i for i in range(57, 201)}
+# "Extended" non-proteinogenic amino acids, expanding the number of possible
+#  building blocks for antibiotic peptides from 20 to 144 (mass 57 - 200).
+ExtAminoMass = {chr(i): i for i in range(57, 201)}
+ExtAminoRevLU = {i: chr(i) for i in range(57, 201)}
 ExtAminoMasses = list(ExtAminoMass.values())
 ExtAminos = list(ExtAminoMass.keys())
 
@@ -335,7 +338,7 @@ def topCyclopeptideSequencing(spectrum:Ints, topN:int) -> Ints:
       topPeptides = trimPeptides(list(leaderboard), spectrum, topN)
    return peptideMasses(topPeptide)[::-1]
 
-def topPeptides(spectrum:Ints, aminoKind='', topN=1000) -> list[Ints]:
+def topPeptidesSequencing(spectrum:Ints, aminoKind='', topN=1000, altAminos=Strs()) -> list[Ints]:
    """ Like Leaderboard Cyclopeptide Sequencing, but
    Returns all top peptides masses
    """
@@ -344,9 +347,10 @@ def topPeptides(spectrum:Ints, aminoKind='', topN=1000) -> list[Ints]:
    leaderboard = set(topPeptides)
    aminos = ExtAminos if aminoKind=='extended' else UniqueMassAminos
    massLU = ExtAminoMass if aminoKind=='extended' else AminoMass
+   alphabet = altAminos if len(altAminos) > 0 else aminos
 
    while len(leaderboard) > 0:
-      leaderboard = set(expand(leaderboard, aminos))
+      leaderboard = set(expand(leaderboard, alphabet))
       for p in leaderboard:
          mass = peptideMass(p, massLU)
          if mass == parentMass:
@@ -354,10 +358,34 @@ def topPeptides(spectrum:Ints, aminoKind='', topN=1000) -> list[Ints]:
             topScore = peptideScore(topPeptides[0], spectrum, 'cyc', massLU)
             if score >= topScore:
                topPeptides = [p] if score > topScore else topPeptides+[p]
+               # print 'topScore', topScore, 'topPeps', topPeptides
          elif mass > parentMass:
             leaderboard.remove(p)
       leaderboard = set(trimPeptides(list(leaderboard), spectrum, topN, massLU))
    return [peptideMasses(p, massLU) for p in topPeptides]
+
+def spectralConvolution(spectrum:Ints, gte=57, lte=200) -> Ints:
+   """ 
+   Returns list of elements in the convolution of Spectrum.
+    If an element has multiplicity k, it should appear exactly k times;
+   """
+   return [i-j for i in spectrum for j in spectrum if gte <= i-j <= lte]
+
+def getTopMasses(L:list[SIPair], topN:int) -> Ints:
+   if len(L) <= topN:
+      return [int(x[0]) for x in L]
+   minCnt = L[topN-1][1]
+   return [int(x[0]) for x in L if x[1] >= minCnt]
+
+def convolutionSequencing(spectrum:Ints, topM=20, topN=60):# -> Ints:#list[Ints]:
+   c = 0
+   counts = histogram(spectralConvolution(spectrum))
+   massCnts = [(str(k), v) for k, v in counts.items()]
+   sortedMasses = sorted(massCnts, key=getSI1)[::-1]
+   topMasses = getTopMasses(sortedMasses, topM)
+   alphabet = [ExtAminoRevLU[i] for i in topMasses]
+   leader_pep = topPeptidesSequencing(spectrum, 'extended', topN, alphabet)
+   return leader_pep
 
 
 def wrapSubpeptides(peptide:str) -> Strs:

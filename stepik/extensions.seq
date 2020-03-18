@@ -11,6 +11,7 @@ type SeqIntDict = dict[seq, int]
 type IntIntDict = dict[int, int]
 type strGraph = dict[str, Strs]
 type Pairs = list[tuple[seq, seq]]
+type SIPair = tuple[str, int]
 type StrPair = tuple[str, str]
 type StrPairs = list[StrPair]
 
@@ -30,3 +31,12 @@ extend seq:
       smLen = len(s1) if len(s1) < len(s2) else len(s2)
       diff = len([1 for i in range(smLen) if s1[i] != s2[i]])
       return diff + abs(len(s1) - len(s2)) 
+
+extend list[T]:
+   def sortedByList(X, Y):
+      return [x for _,x in sorted(zip(Y,X))]
+
+# extend dict:
+#    def sortedKeysByVal(D):
+#       T = sorted([v for v in D.values()])
+#       return [x for _,x in sorted(zip(Y,X))]
