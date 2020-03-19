@@ -161,8 +161,11 @@ def rmSpaces(s:str) -> str:
 def dPath(p:str):
    return 'stepik/data/'+p
 
-def read(p:str) -> File:
+def file(p:str) -> File:
    return open(dPath(p), 'r')
+
+def read(p:str, sz=100000) -> str:
+   return open(dPath(p), 'r').read(sz)
 
 def readlines(p:str) -> list[str]:
    f = open(dPath(p), 'r')

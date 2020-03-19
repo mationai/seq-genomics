@@ -224,16 +224,15 @@ def contigs(kmers:Seqs) -> Strs:
 def genomeFromOrderedPairs(strPairs:StrPairs, k:int, d:int) -> seq:
    """ Construct genome from ordered pairs, aka "string spelled by gapped patterns"
    """
-   pair0 = strPairs[0]
    A, B = unzip(strPairs) 
-   ptns1 = pair0[0] + ''.join([a[-1] for a in A[1:]])
-   ptns2 = pair0[1] + ''.join([b[-1] for b in B[1:]])
+   ptns1 = strPairs[0][0] + ''.join([a[-1] for a in A[1:]])
+   ptns2 = strPairs[0][1] + ''.join([b[-1] for b in B[1:]])
    l = len(ptns1)
    if ptns1[k+d:] != ptns2[:l-k-d]:
       print 'WARN: No string spelled by the gapped patterns'
    return seq(ptns1 + ptns2[-(k+d):])
 
-def genomeFromPairss(strPairs:StrPairs, k:int, d:int) -> str:
+def genomeFromPairs(strPairs:StrPairs, k:int, d:int) -> str:
    """ Construct genome from ordered pairs, aka "string spelled by gapped patterns"
    """
    pairsCnt = len(strPairs)

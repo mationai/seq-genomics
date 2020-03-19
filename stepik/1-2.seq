@@ -58,4 +58,4 @@ if run(8):
 
 # 1.6.2 Find Indices of min skews of sequence in file
 if run(9):
-   minSkewInFile(read('Salmonella_enterica.txt')) |> spaceSep |> echo
+   minSkewInFile(file('Salmonella_enterica.txt')) |> spaceSep |> echo
