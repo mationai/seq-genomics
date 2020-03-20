@@ -14,6 +14,7 @@ type Pairs = list[tuple[seq, seq]]
 type SIPair = tuple[str, int]
 type StrPair = tuple[str, str]
 type StrPairs = list[StrPair]
+type IntMat = list[Ints]
 
 extend seq:
    def __add__(s1:seq, s2:seq) -> seq:

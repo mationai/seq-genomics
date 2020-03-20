@@ -1,6 +1,7 @@
 from math import ceil, log2
 import random
 from extensions import Profile, SeqFloatDict
+from helpers import product
 from seqlib import *
 
 

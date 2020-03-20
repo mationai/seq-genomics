@@ -1,6 +1,5 @@
 from extensions import *
 from helpers import *
-from seqlib import product
 
 CodonLU = {
    "UUU":"F", "UUC":"F", "UUA":"L", "UUG":"L",

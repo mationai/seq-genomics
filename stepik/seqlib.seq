@@ -18,14 +18,6 @@ def insert[T](a:list[T], i:int, x:T):
    else:
       a.insert(i, x)
 
-def product[T](nums:list[T]) -> T:
-   res = nums[0]
-   for n in nums[1:]:
-      if n == 0:
-         return T(0)
-      res *= n
-   return res
-
 def forIndexes(dna:seq, ptn:seq, d=0):
    """ Generates indexes of ptn in dna, with optional max hamming distance d
    """

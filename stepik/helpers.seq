@@ -101,6 +101,12 @@ def parseGraphStr(st:str, sep='\n', arrow=' -> ') -> strGraph:
       res[x] = y.split(',') if ',' in y else [y]
    return res
 
+def parseMat(st:str, lineSep='\n', sep=' ') -> IntMat:
+   return [[int(i) for i in line.split(sep)] for line in st.strip().split(lineSep)]
+
+def parseMats(st:str, sep='-\n') -> list[IntMat]:
+   return [parseMat(s) for s in st.split(sep)]
+
 def pairsStrToStrPairs(st:str, sep='\n', pairSep='|') -> StrPairs:
    res = StrPairs()
    for s in st.split(sep):
@@ -178,5 +184,15 @@ def readGraphStr(p:str) -> strGraph:
    s = '\n'.join(open(dPath(p), 'r').readlines())
    return parseGraphStr(s)
 
+
+def product[T](nums:list[T]) -> T:
+   res = nums[0]
+   for n in nums[1:]:
+      if n == 0:
+         return T(0)
+      res *= n
+   return res
+
+## ----- lambda key functions -----
 def getSI1[T](x:tuple[str, int]) -> int:
    return x[1]
