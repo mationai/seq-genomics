@@ -18,11 +18,11 @@ if run(1):
    7 -> 9
    8 -> 7
    9 -> 6'''
-   S = eulerianPath(parseGraphStr(s), 'cycle', '')
+   S = eulerianPath(parseGraph(s), 'cycle', '')
    S |> pathArrowStr |> rmSpaces |> testVs('2->1->0->3->2->6->8->7->9->6->5->4->2')
 
    s = '1 -> 2|2 -> 1,2|0 -> 1'
-   S = eulerianPath(parseGraphStr(s, '|'), 'cycle', '')
+   S = eulerianPath(parseGraph(s, '|'), 'cycle', '')
    S |> pathArrowStr |> rmSpaces |> testVs('')
 
    s = '''1 -> 10
@@ -31,7 +31,7 @@ if run(1):
    3 -> 10
    4 -> 5
    5 -> 10'''
-   S = eulerianPath(parseGraphStr(s), 'cycle', '')
+   S = eulerianPath(parseGraph(s), 'cycle', '')
    S |> pathArrowStr |> rmSpaces |> testVs('10->2->1->10->3->10->4->5->10')
 
    s = '''0 -> 1,2,3,4
@@ -39,11 +39,11 @@ if run(1):
    2 -> 0,1,3,4
    3 -> 0,1,2,4
    4 -> 0,1,2,3'''
-   S = eulerianPath(parseGraphStr(s), 'cycle', '')
+   S = eulerianPath(parseGraph(s), 'cycle', '')
    S |> pathArrowStr |> rmSpaces |> testVs('0->1->0->2->0->3->0->4->1->2->1->3->1->4->2->3->2->4->3->4->0')
 
    s = '0 -> 3,1|1 -> 2|2 -> 0|3 -> 0'
-   S = eulerianPath(parseGraphStr(s, '|'), 'cycle', '')
+   S = eulerianPath(parseGraph(s, '|'), 'cycle', '')
    S |> pathArrowStr |> rmSpaces |> testVs('0->3->0->1->2->0')
 
    gs = readGraphStr('dataset_203_2.txt') 
@@ -60,7 +60,7 @@ if run(2):
    7 -> 8
    8 -> 9
    9 -> 6'''
-   S = eulerianPath(parseGraphStr(s), 'path', '')
+   S = eulerianPath(parseGraph(s), 'path', '')
    S |> pathArrowStr |> rmSpaces |> testVs('6->7->8->9->6->3->0->2->1->3->4')
 
    gs = readGraphStr('dataset_203_6.txt')
@@ -156,7 +156,7 @@ if run(9):
 
 # 1.6.2 Find maximal non-branching paths
 if run(10):
-   S = parseGraphStr('1 -> 2|2 -> 3|3 -> 4,5|6 -> 7|7 -> 6', '|')
+   S = parseGraph('1 -> 2|2 -> 3|3 -> 4,5|6 -> 7|7 -> 6', '|')
    maxNonBranchingPaths(S) |> pathsArrowStr |> testVs('1 -> 2 -> 3\n3 -> 4\n3 -> 5\n6 -> 7 -> 6')
 
    S = readGraphStr('dataset_6207_2.txt')
