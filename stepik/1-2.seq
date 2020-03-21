@@ -1,61 +1,70 @@
 from extensions import *
 from helpers import *
-from seqlib import minSkewIndices, minSkewInFile, getSkew, indexesIn, patternsDifferBy, mostFreqKmers
+from seqlib import *
 
 
 # 1.3.4 Find skew (running sum of ACTG->+-1/0 mapping) of sequence
 if run(1):
-   getSkew(s'CATGGGCATCGGCCATACGCC') |> spaceSep |> echo
-   getSkew(s'GAGCCACCGCGATA') |> spaceSep |> echo
+   getSkew(s'CATGGGCATCGGCCATACGCC') |> spaceSep |> testVs('0 -1 -1 -1 0 1 2 1 1 1 0 1 2 1 0 0 0 0 -1 0 -1 -2')
+   getSkew(s'GAGCCACCGCGATA') |> spaceSep |> testVs('0 1 1 2 1 0 0 -1 -2 -1 -2 -1 -1 -1 -1')
+
 
 # 1.3.6 Find Indices of min skews of sequence
 if run(2):
    dna = readseqs('dataset_7_6.txt')[0]
-   minSkewIndices(dna) |> spaceSep |> echo
+   minSkewIndices(dna) |> spaceSep |> testVs('9298 9299')
 
 # 1.4.3 Find hamming distance
 if run(3):
-   abs(k'GGGCCGTTGGT' - k'GGACCGTTGAC') |> echo
+   abs(k'GGGCCGTTGGT' - k'GGACCGTTGAC') |> testVs(3)
    [s1, s2] = readseqs('dataset_9_3.txt')
-   s1 - s2 |> echo
+   s1 - s2 |> testVs(751)
+
 
 # 1.4.4 Find Indices of ptn in seq with max of d Hamming dist diff 
 if run(4):
    dna = s'CGCCCGAATCCAGAACGCATTCCCATATTTCGGGACCACTGGCCTCCACGGTACGGACGTCAATCAAAT'
-   indexesIn(dna, s'ATTCTGGA', 3) |> spaceSep |> echo
+   indexesIn(dna, s'ATTCTGGA', 3) |> spaceSep |> testVs('6 7 26 27')
    [ptn, s, n] = readlines('dataset_9_4.txt')
-   indexesIn(seq(s), seq(ptn), int(n)) |> spaceSep |> echo
+   ints = indexesIn(seq(s), seq(ptn), int(n))
+   # ints |> spaceSep |> echo
+   [ints[:4], ints[-4:]] |> testVs([[6, 10, 11, 12], [16389, 16390, 16393, 16394]])
 
 # 1.4.5 
 if run(5):
-   indexesIn(s'AACAAGCTGATAAACATTTAAAGAG', s'AAAAA', 2) |> len |> echo
+   indexesIn(s'AACAAGCTGATAAACATTTAAAGAG', s'AAAAA', 2) |> len |> testVs(11)
 
 # 1.4.6 
 if run(6):
-   indexesIn(s'TTTAGAGCCTTCAGAGG', s'GAGG', 2) |> len |> echo
+   indexesIn(s'TTTAGAGCCTTCAGAGG', s'GAGG', 2) |> len |> testVs(4)
    [ptn, s, n] = readlines('dataset_9_6.txt')
-   indexesIn(seq(s), seq(ptn), int(n)) |> len |> echo
-
-# 1.8.4 Find permutations of ptn differ by d or less
-if run(10):
-   patternsDifferBy(s'ACGT', 2) |> spaceSep |> echo
-   [ptn, n] = readlines('dataset_3014_4.txt')
-   patternsDifferBy(seq(ptn), int(n)) |> spaceSep |> echo
+   indexesIn(seq(s), seq(ptn), int(n)) |> len |> testVs(12)
 
 
 # 1.4.7 Find most frequent k-mers by d dist in seq
 if run(7):
-   mostFreqKmers(s'ACGTTGCATGTCGCATGATGCATGAGAGCT', 4, 1) |> spaceSep |> echo
+   mostFreqKmers(s'ACGTTGCATGTCGCATGATGCATGAGAGCT', 4, 1) |> spaceSep |> testVs('ATGC ATGT GATG')
    [s, nsStr] = readlines('dataset_9_7.txt')
    [k, d] = parseInts(nsStr)
-   mostFreqKmers(seq(s), k, d) |> spaceSep |> echo
+   mostFreqKmers(seq(s), k, d) |> spaceSep |> testVs('CCCCCC')
+
 
 # 1.4.8 Find most frequent k-mers by d dist in seq, account for reverse complement too
 if run(8):
    [s, nsStr] = readlines('dataset_9_8.txt')
    [k, d] = parseInts(nsStr)
-   mostFreqKmers(seq(s), k, d, True) |> spaceSep |> echo
+   mostFreqKmers(seq(s), k, d, True) |> spaceSep |> testVs('CGCGC GCGCG')
+
 
 # 1.6.2 Find Indices of min skews of sequence in file
 if run(9):
-   minSkewInFile(file('Salmonella_enterica.txt')) |> spaceSep |> echo
+   minSkewInFile(file('Salmonella_enterica.txt')) |> spaceSep |> testVs('3764856 3764858')
+
+
+# 1.8.4 Find permutations of ptn differ by d or less
+if run(10):
+   patternsDifferBy(s'ACGT', 2) |> spaceSep |> testVs('AAGG AGGA ACCC ACGG AGGC AGGG ACCG TCGA ACCA TCGC AAGT TCGG ACTA ACTC ACGT AGGT AACT ACTG ACCT AGCT CCAT GTGT TAGT TCGT CTGT AATT TGGT ACTT TCCT GCAT AGTT ATAT TCTT GCGA GCGC CCGA GCGG CCGC CCGG ACAA ACAC GAGT ACAG GCGT CAGT ATGA CCGT ATGC GGGT CGGT CCCT ATGG AAAT ACAT GCCT AGAT GCTT ATGT CCTT TCAT ATCT TTGT ATTT AAGA ACGA AAGC ACGC')
+   [ptn, n] = readlines('dataset_3014_4.txt')
+   S = patternsDifferBy(seq(ptn), int(n))
+   # S |> spaceSep |> echo 
+   [S[:3], S[-3:]] |> testVs([parseSeqsStr('GGCCGATTTA GGTATCTGAA GGTAGCTGAT'), parseSeqsStr('GGCCGCTGAG TTCGGCTGAA GGCCGCTGAC')])

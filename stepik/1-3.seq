@@ -8,75 +8,137 @@ from motifslib import *
 if run(0):
    k9Likelihood = 1 / (4 ** 9)
    chances = 500 * (1000 - 9 + 1)
-   print k9Likelihood * chances
+   k9Likelihood * chances |> testVs(1.89209)
+
 
 # 1.7.1
 if run(1):
-   seqs = parseSeqsStr('TTACCTTAAC GATATCTGTC ACGGCGTTCG CCCTAAAGAG CGTCAGAGGT')
-   print distIn(seqs, s'AAA')
+   S = parseSeqsStr('TTACCTTAAC GATATCTGTC ACGGCGTTCG CCCTAAAGAG CGTCAGAGGT')
+   S |> distIn(s'AAA') |> testVs(5)
    [ptn, s] = readlines('dataset_5164_1.txt')
-   print distIn(parseSeqsStr(s), seq(ptn))
+   S = parseSeqsStr(s)
+   S |> distIn(seq(ptn)) |> testVs(68)
+
 
 # 1.2.8 
 if run(2):
-   seqs = parseSeqsStr('ATTTGGC TGCCTTA CGGTATC GAAAATT')
-   print kmerEnums(seqs, 3, 1)
+   S = parseSeqsStr('ATTTGGC TGCCTTA CGGTATC GAAAATT')
+   S |> kmerEnums(3, 1) |> testVs(parseSeqsStr('ATT TTT ATA GTT'))
    l = readlines('dataset_156_8.txt')
    [k, d] = parseInts(l[0])
-   [seq(s) for s in l[1:]] |> kmerEnums(k, d) |> spaceSep |> echo
+   [seq(s) for s in l[1:]] |> kmerEnums(k, d) |> spaceSep |> testVs('TCACA TCAAA TCAGA TCATA')
 
 # 1.3.2
 if run(3):
-   print maxPossibleMotifScore(10, 15)
+   maxPossibleMotifScore(10, 15) |> testVs(105)
+
 
 # 1.3.8
 if run(4):
-   seqs = parseSeqsStr('TCGGGGGTTTTT CCGGTGACTTAC ACGGGGATTTTC TTGGGGACTTTT AAGGGGACTTCC TTGGGGACTTCC TCGGGGATTCAT TCGGGGATTCCT TAGGGGAACTAC TCGGGTATAACC')
-   print motifsEntropy(seqs)
+   S = parseSeqsStr('TCGGGGGTTTTT CCGGTGACTTAC ACGGGGATTTTC TTGGGGACTTTT AAGGGGACTTCC TTGGGGACTTCC TCGGGGATTCAT TCGGGGATTCCT TAGGGGAACTAC TCGGGTATAACC')
+   str(motifsEntropy(S)) |> testVs('17.1178')
+
 
 # 1.4.9
 if run(5):
-   seqs = parseSeqsStr('AAATTGACGCAT GACGACCACGTT CGTCAGCGCCTG GCTGAGCACCGG AGTTCGGGACAG')
-   print medianKmer(seqs, 3) == s'GAC'
-   seqs = parseSeqsStr('ATA ACA AGA AAT AAC')
-   print medianKmer(seqs, 3) == s'AAA'
+   S = parseSeqsStr('AAATTGACGCAT GACGACCACGTT CGTCAGCGCCTG GCTGAGCACCGG AGTTCGGGACAG')
+   S |> medianKmer(3) |> testVs(s'GAC')
+
+   S = parseSeqsStr('ATA ACA AGA AAT AAC')
+   S |> medianKmer(3) |> testVs(s'AAA')
+
    l = readlines('dataset_158_9.txt')
-   print medianKmer(parseSeqStrs(l[1:]), int(l[0]))
+   S = parseSeqStrs(l[1:])
+   S |> medianKmer(int(l[0])) |> testVs(s'TACCGT')
 
 # 1.5.2
 if run(6):
-   print ptnProbability(s'TCGTGGATTTCC', {
+   ptnProbability(s'TCGTGGATTTCC', {
       s'A': [0.2, 0.2, 0.0, 0.0, 0.0, 0.0, 0.9, 0.1, 0.1, 0.1, 0.3, 0.0],
       s'C': [0.1, 0.6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.4, 0.1, 0.2, 0.4, 0.6],
       s'G': [0.0, 0.0, 1.0, 1.0, 0.9, 0.9, 0.1, 0.0, 0.0, 0.0, 0.0, 0.0],
       s'T': [0.7, 0.2, 0.0, 0.0, 0.1, 0.1, 0.0, 0.5, 0.8, 0.7, 0.3, 0.4],
-   })
+   }) |> testVs(0.0)
    # 0 since it's product([...]), so if any is 0, product is 0
+
 
 # 1.5.3
 if run(7):
-   print mostProbableKmer(s'ACCTGTTTATTGCCTAAGTTCCGAACAAACCCAATATAGCCCGAGGGCCT', 5, {
+   mostProbableKmer(s'ACCTGTTTATTGCCTAAGTTCCGAACAAACCCAATATAGCCCGAGGGCCT', 5, {
       s'A': [0.2, 0.2, 0.3, 0.2, 0.3],
       s'C': [0.4, 0.3, 0.1, 0.5, 0.1],
       s'G': [0.3, 0.3, 0.5, 0.2, 0.4],
       s'T': [0.1, 0.2, 0.1, 0.1, 0.2]
-   })
+   }) |> testVs(s'CCGAG')
+
    l = readlines('dataset_159_3.txt')
-   print mostProbableKmer(seq(l[0]), int(l[1]), parseProfile(l[2:]))
+   mostProbableKmer(seq(l[0]), int(l[1]), parseProfile(l[2:])) |> testVs(s'CGCGGCAGACCAGGA')
+
 
 ## (Stepik needs extra NL at end)
 # 1.5.5
 if run(8):
    dna = parseSeqsStr('GGCGTTCAGGCA AAGAATCAGTCA CAAGGAGTTCGC CACGTCAATCAC CAATAATATTCG')
-   print greedyMotifSearch(dna, 3, 0)
+   greedyMotifSearch(dna, 3, 0) |> testVs(parseSeqsStr('CAG CAG CAA CAA CAA'))
+
    l = readlines('dataset_159_5.txt')
    [k, _] = parseInts(l[0])
-   greedyMotifSearch(parseSeqStrs(l[1:]), k, 0) |> nlSep |> echo 
+   greedyMotifSearch(parseSeqStrs(l[1:]), k, 0) |> nlSep |> testVs('''TTGTTCGTGCAT
+CCTAGAATCTGT
+ACCGCGGGTTGC
+CCGACCATCCGT
+CAAGTTTGGACG
+CTTACGGGTCGT
+CCTACCATCCAT
+CCCAGGAGTCAG
+ACGTCCATGCGT
+CCTAGCAGTACT
+CCGGGCATGCCG
+CACACGGTTTAT
+CTTACCATTCCT
+CAGAGTGTTTCT
+ACGGTGATTTAG
+CTTGGCATGCGG
+CCATCCTTTCAG
+CTTTTGATTAAT
+ACAGCGTTGCAT
+CTGACGGTTTCC
+CCCACAAGGAAG
+CTTAGGGTCTAG
+CCAATCATTACC
+CCATGCATGCAG
+CTTACGGTGTAT''')
 
 # 1.6.9
 if run(9):
    dna = parseSeqsStr('GGCGTTCAGGCA AAGAATCAGTCA CAAGGAGTTCGC CACGTCAATCAC CAATAATATTCG')
-   print greedyMotifSearch(dna, 3)
+   greedyMotifSearch(dna, 3) |> testVs(parseSeqsStr('TTC ATC TTC ATC TTC'))
+
    l = readlines('dataset_160_9.txt')
    [k, _] = parseInts(l[0])
-   greedyMotifSearch(parseSeqStrs(l[1:]), k) |> nlSep |> echo
+   dna = parseSeqStrs(l[1:])
+   greedyMotifSearch(dna, k) |> nlSep |> testVs('''CTTATTCGTGGG
+CTTAGGCGTGTT
+CTTAAACGTGAC
+CTTAGGCGTGTG
+CTTAGACGTGAA
+CTTAGACGTGGG
+CTTAGGCGTGAC
+CTTATCCGTGTT
+CTTACGCGTGTA
+CTTAGTCGTGTT
+CTTATCCGTGTT
+CTTACTCGTGAA
+CTTATGCGTGAT
+CTTATTCGTGGT
+CTTAGTCGTGTG
+CTTAAACGTGAC
+CTTAGGCGTGCT
+CTTACGCGTGTT
+CTTAACCGTGCT
+CTTAGGCGTGAA
+CTTAGGCGTGTT
+CTTACGCGTGGT
+CTTATACGTGGT
+CTTATCCGTGTC
+CTTATGCGTGTT''')

@@ -94,21 +94,6 @@ def parseSeqStrs(S:Strs, sep=' ') -> Seqs:
 def parseProfile(d) -> Profile:
    return {seq(key): parseFloats(d[i]) for i, key in enumerate('ACGT')}
 
-def parseGraph(st:str, sep='\n', arrow=' -> ') -> strGraph:
-   res = strGraph()
-   for s in [s.strip() for s in st.split(sep)]:
-      lf, rt = s.split(arrow)
-      res[lf] = rt.split(',') if ',' in rt else [rt]
-   return res
-
-def parseWeightedGraph(st:str, sep='\n', arrow='->', wtSym=':') -> strGraph:
-   res = strGraph()
-   for s in [s.strip() for s in st.split(sep)]:
-      n1, rt = s.split(arrow)
-      n2, wt = rt.split(wtSym)
-      res[n1] = res[n1]+[(n2, wt)] if n1 in res else [(n2, wt)]
-   return res
-
 def parseMat(st:str, lineSep='\n', sep=' ') -> IntMat:
    return [[int(i) for i in line.split(sep)] for line in st.strip().split(lineSep)]
 
@@ -156,7 +141,7 @@ def toPairsStr(pairs:Pairs, sort=True) -> str:
       strs.sort()
    return strs |> spaceSep
 
-def adjGraphStr(sg:strGraph) -> str:
+def adjGraphStr(sg:Graph) -> str:
    res = [f"{x} -> {','.join(sg[x])}" for x in sg]
    return '\n'.join(res)
 
@@ -187,10 +172,6 @@ def readlines(p:str) -> list[str]:
 
 def readseqs(p:str) -> list[seq]:
    return list(seqs(dPath(p)))
-
-def readGraphStr(p:str) -> strGraph:
-   s = '\n'.join(open(dPath(p), 'r').readlines())
-   return parseGraph(s)
 
 
 def product[T](nums:list[T]) -> T:

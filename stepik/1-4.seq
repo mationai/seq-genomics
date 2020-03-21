@@ -11,7 +11,7 @@ if run(2):
    l = readlines('dataset_161_5.txt')
    [k, _] = parseInts(l[0])
    res = iterRandMotifSearch(parseSeqStrs(l[1:]), k)
-   print res |> nlSep
+   # print res |> nlSep
    res |> testVs(parseSeqsStr('TCTAAATCTGGGGTT ACTGCGTTCGAGCTT ACTATATCATAGCTT ACTACCCTCGAGCTT ACTGCTTTCGAGCTT ACTATATTCGAGAAC CCTATATTCGAGCGC ACTATTGACGAGCTT AACGTATTCGAGCTT CATATATTCGAGCTG ACTATATTCCGCCTT ACTATATTCGACAGT ACTATACATGAGCTT ACTATATTAAGGCTT ACTATCCCCGAGCTT ACTATAGAAGAGCTT ACTACCATCGAGCTT CGAATATTCGAGCTT ACTATATTCGTAGTT ACGTGATTCGAGCTT'))
 
 if run(3):
@@ -22,16 +22,21 @@ if run(3):
    # 1.2.3 - probability of capturing a 15-mer in n l-length nucleotides
    p1 = (l - k) / (l+1 - k) # probability of not capturing the kmer in one string
    pr = p1 ** n # p1 * p2 ... * p10, where all probabilities are same
-   print 1.0 - pr
+   res = 1.0 - pr
+   str(res) |> testVs('0.0169344')
 
    # 1.2.4 - probability of capturing 2 15-mer in n l-length nucleotides
-   print 1.0 - p1**n - (1.0/(l+1-k) * p1**(n-1) * n)
+   res = 1.0 - p1**n - (1.0/(l+1-k) * p1**(n-1) * n)
+   str(res) |> testVs('0.000129857')
+
 
 # 1.3.4
 if run(4):
    seqs = parseSeqsStr('CGCCCCTCTCGGGGGTGTTCAGTAACCGGCCA GGGCGAGGTATGTGTAAGTGCCAAGGTGCCAG TAGTACCGAGACCGAAAGAAGTATACAGGCGT TAGATCAAGTTTCAGGTGCACGTCGGTGAACC AATCCACCAGCTCCACGTGCAATGTTGGCCTA')
-   gibbsSampler(seqs, 8) |> testVs(parseSeqsStr('TCTCGGGG CCAAGGTG TACAGGCG TTCAGGTG TCCACGTG'))
+   gibbsSampler(seqs, 8) |> testColl(parseSeqsStr('TCTCGGGG CCAAGGTG TACAGGCG TTCAGGTG TCCACGTG'))
+
 if run(5):
    l = readlines('dataset_163_4.txt')
    [k, _, iters] = parseInts(l[0])
-   print gibbsSampler(parseSeqStrs(l[1:]), k) |> nlSep # gibbsSampler(k) can't be on RHS of |> due to default vals  
+   # gibbsSampler(parseSeqStrs(l[1:]), k) |> nlSep |> echo
+   gibbsSampler(parseSeqStrs(l[1:]), k) |> testColl(parseSeqsStr('CAACGATCACAGGTT CCTGCTTTCCGGGTT AGTAGATTCCGGGTA CCTAATCTCCGGGTT CCTAGATTCCGGTAG CCTACGATCCGGGTT CAGTGATTCCGGGTT CCTTATTTCCGGGTT CCTAGATAAGGGGTT CCTAGATTCCGCACT CCTAGGGCCCGGGTT CCTAGGGCCCGGGTT CCTAGATTCCCTATT CCTAGATTCTCCGTT GCTAGATTCCGGGAC CCTAGATTGATGGTT CCTAGAAAACGGGTT CCCGAATTCCGGGTT CCTAGACGTCGGGTT GGGAGATTCCGGGTT'))

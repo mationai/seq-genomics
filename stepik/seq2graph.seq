@@ -2,9 +2,9 @@ from extensions import *
 from helpers import adjGraphStr
 
 
-class AdjGraph:
-   sg: strGraph
-   def __init__(self:AdjGraph, dna:Seqs, method:str, k:int):
+class Seq2Graph:
+   sg: Graph
+   def __init__(self:Seq2Graph, dna:Seqs, method:str, k:int):
       """ Returns de Bruijn graph via:
       """
       match method:
@@ -15,8 +15,8 @@ class AdjGraph:
          case _:
             self.sg = self.fromKmers(dna)
 
-   def fromKmers(self:AdjGraph, kmers:Seqs) -> strGraph:
-      """ Returns strGraph Graph where each node value is of length kmer-length - 1 
+   def fromKmers(self:Seq2Graph, kmers:Seqs) -> Graph:
+      """ Returns Graph Graph where each node value is of length kmer-length - 1 
       Eg. GAGG CAGG GGGG GGGA CAGG AGGG GGAG =>
       AGG -> GGG
       CAG -> AGG,AGG
@@ -34,7 +34,7 @@ class AdjGraph:
       k = len(kmers[0]) - 1
       if k < 1:
          raise ValueError('Can not build adjacencyGraph via "kmers" method with k=0')
-      res = strGraph()
+      res = Graph()
       for kmer in kmers:
          x, y = [str(s) for s in kmer.split(k, 1)]
          if x in res:
@@ -43,7 +43,7 @@ class AdjGraph:
             res[x] = [y]
       return res
 
-   def viaOverlap(self:AdjGraph, dna:Seqs) -> strGraph:
+   def viaOverlap(self:Seq2Graph, dna:Seqs) -> Graph:
       """ Eg: ATGCG GCATG CATGC AGGCA GGCAT GGCAC =>
       IndexError: list index out of range
       GCATG -> CATGC
@@ -54,7 +54,7 @@ class AdjGraph:
       if len(dna) < 2:
          raise ValueError('Can not build adjacencyGraph from seqs of length 0 - 1')
       seqs = [str(s) for s in set(dna)]
-      res = strGraph()
+      res = Graph()
       for i, x in enumerate(seqs):
          for y in seqs[0:i] + seqs[i+1:]:
             if x[1:] == y[:-1]:
@@ -63,7 +63,7 @@ class AdjGraph:
                res[x].append(y)
       return res
 
-   def fromSeq(self:AdjGraph, dna:seq, k=4) -> strGraph:
+   def fromSeq(self:Seq2Graph, dna:seq, k=4) -> Graph:
       """ Eg: CTTCTTC, 4 =>
       CTT -> TTC,TTC
       TTC -> TCT
@@ -72,12 +72,12 @@ class AdjGraph:
       if k < 2:
          raise ValueError('Can not build adjacencyGraph from k of 0 - 1')
       seqs = [str(s) for s in dna.split(k-1, 1)] # result are edge labels, so k-1
-      res = strGraph()
+      res = Graph()
       for i, x in enumerate(seqs[:-1]):
          if x not in res:
             res[x] = Strs()
          res[x].append(seqs[i+1])
       return res
 
-   def __str__(self:AdjGraph) -> str:
+   def __str__(self:Seq2Graph) -> str:
       return adjGraphStr(self.sg)

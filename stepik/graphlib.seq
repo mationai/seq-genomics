@@ -1,8 +1,33 @@
 from extensions import *
-from adjGraph import *
+from seq2graph import *
 from helpers import *
 
-def eulerianPath(sg:strGraph, kind:str, start:str) -> Strs:
+
+def parseGraph(st:str, sep='\n', arrow=' -> ') -> Graph:
+   res = Graph()
+   for s in [s.strip() for s in st.split(sep)]:
+      lf, rt = s.split(arrow)
+      res[lf] = rt.split(',') if ',' in rt else [rt]
+   return res
+
+def parseWGraph(st:str, sep='\n', arrow='->', wtSep=':') -> WGraph:
+   """ parse weight graph string to WGraph, Eg.
+   0->1:1  0->3:10  1->2:1  2->3:1 =>
+   0: [(1,1), (3,10)],  1:[(2,1)],  2:[(3,1)]
+   """
+   res = WGraph()
+   for s in [s.strip() for s in st.split(sep)]:
+      src, rt = s.split(arrow)
+      dst, wt = rt.split(wtSep)
+      res[src] = res[src]+[(dst, int(wt))] if src in res else [(dst, int(wt))]
+   return res
+
+def readGraphStr(p:str) -> Graph:
+   s = '\n'.join(open(dPath(p), 'r').readlines())
+   return parseGraph(s)
+
+
+def eulerianPath(sg:Graph, kind:str, start:str) -> Strs:
    """ See http://www.graph-magics.com/articles/euler.php
    kind one of:
    'cycle'
@@ -108,7 +133,7 @@ def mergeOrderedSeqs[T](seqs:list[T]) -> T:
 def genomeFromSeqs(seqs:Seqs, kind:str, start:str) -> str: 
    """ Reconstruct genome from seqs with method and kind (see eulerianPath())
    """
-   sg = AdjGraph(seqs, 'kmers', 0).sg
+   sg = Seq2Graph(seqs, 'kmers', 0).sg
    path = eulerianPath(sg, kind, start)
    dna = path |> mergeOrderedSeqs
    if kind != 'universal':
@@ -147,7 +172,7 @@ def pathEdgesFromNodes[T](S:list[T]) -> list[T]:
       return S
    return [s+S[i+1] for i, s in enumerate(S[:-1])]
 
-def isTunnelNode(src:str, sg:strGraph) -> bool:
+def isTunnelNode(src:str, sg:Graph) -> bool:
    """ Return if src in sg has only 1 other node pointing to it
    and if ag[src] has only 1 node
    Q: Still a tunnel of another node points to src and other nodes?
@@ -159,7 +184,7 @@ def isTunnelNode(src:str, sg:strGraph) -> bool:
       cnt += sum([1 for v in vals if v == src])
    return cnt == 1
 
-def maxNonBranchingPaths(sg:strGraph) -> list[Strs]:
+def maxNonBranchingPaths(sg:Graph) -> list[Strs]:
    """ Returns non-branching paths in sg
    """
    res = list[Strs]()
@@ -201,7 +226,7 @@ def contigsFromSeq(ptn:seq, k:int) -> Strs:
    [TAAT TGTT TGCCAT ATG ATG ATG TGG GGG GGAT]
    """
    kmers = list(ptn.split(k, 1))
-   sg = AdjGraph(kmers, 'kmers', 0).sg
+   sg = Seq2Graph(kmers, 'kmers', 0).sg
    path = eulerianPath(sg, 'path', '')
    stack = Strs()
    res = Strs()
@@ -217,7 +242,7 @@ def contigsFromSeq(ptn:seq, k:int) -> Strs:
 def contigs(kmers:Seqs) -> Strs:
    """ Generate Contig - long, segments of non-branching genome from kmers
    """
-   sg = AdjGraph(kmers, 'kmers', 0).sg
+   sg = Seq2Graph(kmers, 'kmers', 0).sg
    paths = maxNonBranchingPaths(sg)
    return [mergeOrderedSeqs(p) for p in paths]
 
