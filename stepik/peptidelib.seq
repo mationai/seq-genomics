@@ -402,6 +402,8 @@ def floatsSpectrumToInts(spectrum:Floats) -> Ints:
    return sorted(rounded)
     
 def protonMassSpecCyclopeptideSequencing(fSpectrum:Floats, topM:int, topN:int) -> Ints:
+   """ Didn't produce correct answer
+   """
    spectrum = floatsSpectrumToInts(fSpectrum)
    counts = spectralConvolution(spectrum) |> histogram
    massCnts = [(str(k), v) for k, v in counts.items()]

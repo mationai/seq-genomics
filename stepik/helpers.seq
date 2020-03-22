@@ -145,14 +145,11 @@ def adjGraphStr(sg:Graph) -> str:
    res = [f"{x} -> {','.join(sg[x])}" for x in sg]
    return '\n'.join(res)
 
-def pathArrowStr[T](S:list[T]) -> str:
-   return ' -> '.join([str(s) for s in S])
+def pathArrowStr[T](S:list[T], arrow=' -> ') -> str:
+   return arrow.join([str(s) for s in S])
 
-def pathsArrowStr[T](SS:list[list[T]]) -> str:
-   res = Strs()
-   for S in SS:
-      res.append(' -> '.join([str(s) for s in S]))
-   return '\n'.join(res)
+def pathsArrowStr[T](SS:list[list[T]], arrow=' -> ') -> str:
+   return '\n'.join([pathArrowStr(S, arrow) for S in SS])
 
 def rmSpaces(s:str) -> str:
    return s.replace(' ', '')

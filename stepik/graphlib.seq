@@ -26,6 +26,9 @@ def readGraphStr(p:str) -> Graph:
    s = '\n'.join(open(dPath(p), 'r').readlines())
    return parseGraph(s)
 
+def copyWG(wg:WGraph) -> WGraph:
+   return {k: v[:] for k, v in wg.items()}
+
 
 def eulerianPath(sg:Graph, kind:str, start:str) -> Strs:
    """ See http://www.graph-magics.com/articles/euler.php

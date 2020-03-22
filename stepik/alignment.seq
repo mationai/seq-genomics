@@ -1,19 +1,19 @@
 from extensions import *
 from helpers import product
+from graphlib import copyWG
 
 
-def dpMinEqual(total:int, values:Ints) -> int:
+def minPickDP(total:int, valueSet:Ints) -> int:
    """ Dynamic Programming Coin Change
-   Returns min number of value picked from values that equals total
+   Returns min number of value picked from valueSet that = total
    """
-   maxVal = product(values)
+   maxVal = product(valueSet)
    res = [0 for _ in range(total+1)]
-   for j in range(1, total+1):
-      res[j] = maxVal
-      for i in range(0, len(values)):
-         if j >= values[i]:
-            if res[j - values[i]] + 1 < res[j]:
-               res[j] = res[j - values[i]] + 1
+   for i in range(1, total+1):
+      res[i] = maxVal # to be replaced in if below if condition is true
+      for val in valueSet:
+         if i >= val and res[i - val] + 1 < res[i]:
+            res[i] = res[i-val] + 1
    return res[total] if len(res) > total else 0
 
 def manhattanTourist(Down:IntMat, Right:IntMat) -> int:
@@ -38,45 +38,107 @@ def manhattanTourist(Down:IntMat, Right:IntMat) -> int:
       path[0][j] = path[0][j-1] + Right[0][j-1]
    for i in range(1, downHt+1):
       for j in range(1, rightWd+1):
-         path[i][j] = max(path[i-1][j]+Down[i-1][j], path[i][j-1]+Right[i][j-1])      
+         path[i][j] = max(
+            path[i-1][j] + Down[i-1][j],
+            path[i][j-1] + Right[i][j-1],
+         )      
    return path[downHt][rightWd]
 
 def LCSBackTrack(v:str, w:str) -> StrMat:
-   """ Least Common Subsequence Backtrack
+   """ Longest Common Subsequence Backtrack
    Returns Mat of Backtracking pointers (symbols)
    """
    vLen = len(v)
    wLen = len(w)
-   s = [[0 for i in range(wLen+1)] for j in range(vLen+1)] # length of an LCS
+   m = [[0 for i in range(wLen+1)] for j in range(vLen+1)]
    res = [['' for i in range(wLen+1)] for j in range(vLen+1)]
    for i in range(1, vLen+1):
       for j in range(1, wLen+1):
-         s[i][j] = max([
-            s[i-1][j],
-            s[i][j-1],
-            s[i-1][j-1] + (1 if v[i-1]==w[j-1] else 0),
+         m[i][j] = max([
+            m[i-1][j],
+            m[i][j-1],
+            m[i-1][j-1] + (1 if v[i-1]==w[j-1] else 0),
          ])
-         if   s[i][j] == s[i-1][j]:
+         if   m[i][j] == m[i-1][j]:
             res[i][j] = 'v'
-         elif s[i][j] == s[i][j-1]:
+         elif m[i][j] == m[i][j-1]:
             res[i][j] = '>'
-         elif s[i][j] == s[i-1][j-1] + 1:
+         elif m[i][j] == m[i-1][j-1] + 1:
             res[i][j] = '\\'
    return res
 
-def lcs(backtrack:StrMat, v:str, vLen:int, wLen:int) -> str:
-   """ Least Common Subsequence
+def getLCS(backtrack:StrMat, v:str, vLen:int, wLen:int) -> str:
+   """ Eg.
+   v: 'A ACCT TGG'
+   w: 'ACAC TGTGA'
+   r: 'A AC T TG ' = AACTTG.  Return stack ('-' is has matched return from else):
+   - A
+   > A
+   - AA
+   - AAC
+   v AAC
+   - AACT
+   > AACT
+   - AACTT
+   - AACTTG
+   > AACTTG
+   v AACTTG
    """
    if vLen==0 or wLen==0:
       return ''
    if backtrack[vLen][wLen] == 'v':
-      return lcs(backtrack, v, vLen-1, wLen)
+      return getLCS(backtrack, v, vLen-1, wLen)
    elif backtrack[vLen][wLen] == '>':
-      return lcs(backtrack, v, vLen,   wLen-1)
+      return getLCS(backtrack, v, vLen,   wLen-1)
    else:
-      return lcs(backtrack, v, vLen-1, wLen-1) + v[vLen-1]
+      return getLCS(backtrack, v, vLen-1, wLen-1) + v[vLen-1]
 
-def leastCommonSubseq(seq1:str, seq2:str) -> str:
+def longestCommonSubseq(seq1:str, seq2:str) -> str:
+   """ good tutorial: http://wordaligned.org/articles/longest-common-subsequence
+   """
    backtrack = LCSBackTrack(seq1, seq2)
-   return lcs(backtrack, seq1, len(seq1), len(seq2))
+   return getLCS(backtrack, seq1, len(seq1), len(seq2))
 
+
+def topologicalSort(wg:WGraph) -> WPaths:
+   """ Sorts weighted graph from shortest to longest
+   Eg.: [
+      (0, [(1, 1), (3, 10)])]
+      (1, [(2, 1)]),
+      (2, [(3, 1)]),
+   ] => 0 with 2 edges will be last
+   """
+   visited = WPaths()
+   unvisited = copyWG(wg)
+   while len(list(unvisited.keys())) > 0:
+      cyclic = True
+      for src, edges in unvisited.items():
+         # src in loop from Eg.: 0, 1, 2, 0, 1, 0
+         cyclicable = any([dst in unvisited for dst, _ in edges]) 
+         if not cyclicable:
+            # when:
+            #  src=2: 3 not in unvisited
+            #  src=1: 2 not in unvisited after 2 is removed from unvisited
+            #  src=0: 1,3 not in unvisited after 1 is removed from unvisited
+            cyclic = False
+            del unvisited[src]
+            visited.append((src, edges))
+      if cyclic:
+         raise ValueError("Graph is cyclic, not a DAG")
+   return visited
+
+def longestWeightedPath(sortedWtPaths:WPaths, source:str) -> tuple[int, Strs]:
+   """ Returns the longest weighted DAG path from source in graph defined by sortedWtPaths
+   """
+   lens = dict[str, int]()
+   paths = dict[str, Strs]()
+   for src, edges in sortedWtPaths:
+      lens[src] = 0
+      paths[src] = Strs()
+      for dst, wt in edges:
+         lens[dst] = 0 if dst not in lens else lens[dst]
+         paths[dst] = Strs() if dst not in paths else paths[dst]
+         if lens[src] < lens[dst] + wt:
+            lens[src] = lens[dst] + wt
+            paths[src] = [dst] + paths[dst]
+   return lens[source], [source]+paths[source]
