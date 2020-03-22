@@ -179,6 +179,25 @@ def product[T](nums:list[T]) -> T:
       res *= n
    return res
 
+def maxXY[T](M:list[list[T]], minVal:T) -> tuple[int, int]:
+   jLen = len(M)
+   iLen = len(M[0])
+   score = minVal
+   iMax, jMax = 0, 0
+   for j in range(jLen):
+      for i in range(iLen):
+         if M[j][i] > score:
+            score = M[j][i]
+            iMax, jMax = i, j
+   return iMax, jMax
+
+def maxIn[T](M:list[list[T]], minVal:T) -> tuple[int, int]:
+   i, j = maxXY(M, minVal)
+   return M[j][i]
+
+def zeros[T](xLen:int, yLen:int) -> IntMat:
+   return [[0 for i in range(xLen)] for j in range(yLen)]
+
 ## ----- lambda key functions -----
 def getSI1[T](x:tuple[str, int]) -> int:
    return x[1]

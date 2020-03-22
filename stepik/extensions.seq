@@ -18,6 +18,7 @@ type StrPair = tuple[str, str]
 type StrPairs = list[StrPair]
 type IntMat = list[Ints]
 type StrMat = list[Strs]
+type ScoreMat = dict[dict[str,int]]
 
 extend seq:
    def __add__(s1:seq, s2:seq) -> seq:
@@ -39,6 +40,33 @@ extend seq:
 extend list[T]:
    def sortedByList(X, Y):
       return [x for _,x in sorted(zip(Y,X))]
+
+extend str:
+   # eslice additions: https://github.com/seq-lang/seq/commit/ae1384cdab890f888fe751d515bc50fd385726a8
+   def _make_from_range(self: str, start: int, stop: int, step: int, length: int):
+      p = ptr[byte](length)
+      j = 0
+      for i in range(start, stop, step):
+         p[j] = self.ptr[i]
+         j += 1
+      return str(p, length)
+
+   def __getitem__(self: str, s: esslice):
+      start, stop, step, length = slice.adjust_indices(len(self), step=s.step)
+      return self._make_from_range(start, stop, step, length)
+
+   def __getitem__(self: str, s: rsslice):
+      start, stop, step, length = slice.adjust_indices(len(self), start=s.start, step=s.step)
+      return self._make_from_range(start, stop, step, length)
+
+   def __getitem__(self: str, s: lsslice):
+      start, stop, step, length = slice.adjust_indices(len(self), end=s.end, step=s.step)
+      return self._make_from_range(start, stop, step, length)
+
+   def __getitem__(self: str, s: sslice):
+      start, stop, step, length = slice.adjust_indices(len(self), start=s.start, stop=s.end, step=s.step)
+      return self._make_from_range(start, stop, step, length)
+   # end eslice additions
 
 # extend dict:
 #    def sortedKeysByVal(D):

@@ -3,7 +3,7 @@ from helpers import *
 from graphlib import *
 from alignment import *
 
-# Lesson 3 - Week 1 (/40)
+# Lesson 3 - Week 1 (40/40)
 
 # 1.5.10 - Dynamic Programming
 if run(1):
@@ -58,8 +58,8 @@ if run(4):
 3->4:3''')
    paths = topologicalSort(wg)
    d, p = longestWeightedPath(paths, '0')
-   pStr = pathArrowStr(p, '->')
-   '\n'.join([str(d), pStr]) |> testVs('9\n0->2->3->4')
+   res = pathArrowStr(p, '->')
+   f"{d}\n{res}" |> testVs('9\n0->2->3->4')
 
    wg = parseWGraph('''0->1:1
 0->3:10
@@ -67,14 +67,13 @@ if run(4):
 2->3:1''')
    paths = topologicalSort(wg)
    d, p = longestWeightedPath(paths, '0')
-   pStr = pathArrowStr(p, '->')
-   '\n'.join([str(d), pStr]) |> testVs('10\n0->3')
+   res = pathArrowStr(p, '->')
+   f"{d}\n{res}" |> testVs('10\n0->3')
 
 if run(5):
    l = readlines('dataset_245_7.txt')
    wg = parseWGraph('\n'.join(l[2:]))
    paths = topologicalSort(wg)
    d, p = longestWeightedPath(paths, l[0])
-   pStr = pathArrowStr(p, '->')
-   '\n'.join([str(d), pStr]) |> testVs('172\n0->1->4->5->7->12->13->16->17->22->27->32->36->43->46->49')
-
+   res = pathArrowStr(p, '->')
+   f"{d}\n{res}" |> testVs('172\n0->1->4->5->7->12->13->16->17->22->27->32->36->43->46->49')
