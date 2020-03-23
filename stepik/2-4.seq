@@ -2,7 +2,7 @@ from extensions import *
 from helpers import *
 from peptidelib import *
 
-# Lesson 2 - Week 4 (45/45)
+# Lesson 2 - Week 4
 
 # 1.1.3 - cylioPeptide score of given amnio acid and spectrum
 if run(1):

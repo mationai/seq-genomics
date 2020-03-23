@@ -19,10 +19,16 @@ def nlSep[T](L:list[T]) -> str:
 
 def run(n:int) -> bool:
    x = argv[1] if len(argv) > 1 else ''
-   res = x == '' or int(x) == n
-   if res:
-      print '\n'+str(n)+':'
-   return res
+   if '-' in x:
+      low, high = [int(s.strip()) for s in x.split('-')]
+      if low <= n <= high:
+         print '\n'+str(n)+':'
+         return True
+   else:
+      if x=='' or int(x)==n:
+         print '\n'+str(n)+':'
+         return True
+   return False
 
 def testIn[T](a:T, B:list[T]):
    if any(a==x for x in B):
@@ -178,6 +184,16 @@ def product[T](nums:list[T]) -> T:
          return T(0)
       res *= n
    return res
+
+def maxIdx[T](M:list[T], minVal:T) -> int:
+   iLen = len(M)
+   score = minVal
+   iMax = 0
+   for i in range(iLen):
+      if M[i] > score:
+         score = M[i]
+         iMax = i
+   return iMax
 
 def maxXY[T](M:list[list[T]], minVal:T) -> tuple[int, int]:
    jLen = len(M)

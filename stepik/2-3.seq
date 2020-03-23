@@ -3,7 +3,7 @@ from helpers import *
 from peptidelib import *
 from math import log10
 
-# Lesson 2 - Week 3 (35/35)
+# Lesson 2 - Week 3
 
 # 1.2.4
 if run(1):

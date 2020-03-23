@@ -18,7 +18,7 @@ type StrPair = tuple[str, str]
 type StrPairs = list[StrPair]
 type IntMat = list[Ints]
 type StrMat = list[Strs]
-type ScoreMat = dict[dict[str,int]]
+type ScoreMat = dict[str, dict[str,int]]
 
 extend seq:
    def __add__(s1:seq, s2:seq) -> seq:
