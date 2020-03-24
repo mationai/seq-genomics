@@ -18,6 +18,8 @@ type StrPair = tuple[str, str]
 type StrPairs = list[StrPair]
 type IntMat = list[Ints]
 type StrMat = list[Strs]
+type StrMatMap = dict[str, StrMat]
+type IntMatMap = dict[str, IntMat]
 type ScoreMat = dict[str, dict[str,int]]
 
 extend seq:
